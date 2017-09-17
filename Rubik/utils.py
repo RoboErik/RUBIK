@@ -1,3 +1,4 @@
+from datetime import datetime
 
 def getChar():
     # figure out which function to use once, and store it in _func
@@ -28,3 +29,8 @@ def getChar():
             getChar._func = _ttyRead
 
     return getChar._func()
+
+
+def milli_time():
+    return round(datetime.utcnow().timestamp() * 1000)
+

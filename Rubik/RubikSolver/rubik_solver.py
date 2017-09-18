@@ -4,16 +4,32 @@ from . import switch_timer
 from .. import utils
 from .. import pins
 
+from .rpi_ws281x.python.neopixel import *
+
+# LED strip configuration:
+LED_COUNT = 16  # Number of LED pixels.
+LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
+# LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
+LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
+LED_DMA = 5  # DMA channel to use for generating signal (try 5)
+LED_BRIGHTNESS = 255  # Set to 0 for darkest and 255 for brightest
+LED_INVERT = False  # True to invert the signal (when using NPN transistor level shift)
+LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
+LED_STRIP = ws.WS2811_STRIP_GRB  # Strip type and colour ordering
 
 # In this mode just records the time between lifting and replacing the Cube.
 MODE_TIME = 0
 # In this mode generates a pattern and checks for that pattern on down.
 MODE_PATTERN = 1
 
+strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS,
+                          LED_CHANNEL, LED_STRIP)
+strip.begin()
+
+
 # Does not solve a Rubik cube, but either times how long it took to solve or
 # requires a specific pattern be created.
-class RubikSolver (threading.Thread):
-
+class RubikSolver(threading.Thread):
     _state = 0
     _mode = MODE_TIME
     _pattern = []
@@ -41,7 +57,9 @@ class RubikSolver (threading.Thread):
 
     def _setup(self):
         print("Setup of RubikSolver")
-        GPIO.add_event_detect(pins.RUBIK_CUBE_SWITCH, GPIO.BOTH, callback=self._switch_callback, bouncetime=300)
+        GPIO.add_event_detect(pins.RUBIK_CUBE_SWITCH, GPIO.BOTH, callback=self._switch_callback,
+                              bouncetime=300)
+        print("Pin set up")
 
     def _teardown(self):
         print("Teardown of RubikSolver")
@@ -49,10 +67,13 @@ class RubikSolver (threading.Thread):
         self.hide_pattern()
 
     def stop(self):
-        print("Stopping RubikSolver! Time is " + str(utils.milli_time()))
+        print("Stopping RubikSolver! Time is " + str(utils.curr_time_s()))
         self._stop_event.set()
 
     def run(self):
         self._setup()
+        strip.setPixelColor(1, 0xaa00aa)
+        strip.show()
         self._stop_event.wait(6)
+        strip.setPixelColor(1, 0x000000)
         self._teardown()

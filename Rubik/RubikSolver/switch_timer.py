@@ -13,13 +13,13 @@ class SwitchTimer:
 
     def on_switch_up(self):
         if self.start_time == -1:
-            self.start_time = utils.milli_time()
+            self.start_time = utils.curr_time_s()
 
     def reset(self):
         self.start_time = -1
         self.end_time = -1
 
     def on_switch_down(self):
-        self.end_time = utils.milli_time()
+        self.end_time = utils.curr_time_s()
         self.elapsed_time = self.end_time - self.start_time
         return self.elapsed_time

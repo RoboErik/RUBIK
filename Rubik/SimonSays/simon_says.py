@@ -17,12 +17,12 @@ class SimonSays (threading.Thread):
 
     def showValue(self, value):
         # TODO: turn on correct button & play sound
-        print("\r" + value, sep=' ', end='', flush=True)
+        print("\r" + value)  # , sep=' ', end='', flush=True)
 
     def turnOff(self, value):
         # TODO: stop showing all values/sounds
         clear = " " * len(value)
-        print("\r" + clear, sep=' ', end='', flush=True)
+        print("\r" + clear)  # , sep=' ', end='', flush=True)
         return
 
     def addRandom(self, seq):

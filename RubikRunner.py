@@ -1,9 +1,9 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import time
 
 from Rubik.GearRatios import gear_ratios
 from Rubik.SimonSays import simon_says
-from Rubik.Timer import rubik_solver
+from Rubik.RubikSolver import rubik_solver
 from Rubik import utils
 from Rubik import pins
 
@@ -25,7 +25,9 @@ elif nextChar.upper() == 'G':
     active.append(gearRatio)
 elif nextChar.upper() == 'R':
     rubikSolver.start()
+    print("sleeping for 3\n")
     time.sleep(3)  # TODO remove
+    print("done sleeping\n")
     rubikSolver.stop()
     active.append(rubikSolver)
 

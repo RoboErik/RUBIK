@@ -8,15 +8,18 @@ from Rubik.SimonSays import simon_says
 from Rubik.RubikGui import main_gui
 from Rubik import utils
 
+pins_setup = False
+
 try:
     # for running on the Pi
     from Rubik.RubikSolver import rubik_solver
     rubikSolver = rubik_solver.RubikSolver()
     from Rubik import pins
     pins.setup()
+    pins_setup = True
 
 except ImportError:
-    print("Not on Pi, solver unavailable")
+    print("Not on Pi, solver/pins unavailable")
 
 active = []
 
@@ -53,4 +56,5 @@ for thread in active:
 print("Threads have finished")
 
 root.destroy()
-pins.teardown()
+if pins_setup:
+    pins.teardown()

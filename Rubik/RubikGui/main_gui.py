@@ -1,9 +1,11 @@
 from tkinter import *
 
-class App:
+class Gui ():
+    master_ = None
 
     def __init__(self, master):
-
+        super().__init__()
+        self.master_ = master
         frame = Frame(master)
         frame.pack()
 
@@ -18,9 +20,9 @@ class App:
     def say_hi(self):
         print("hi there, everyone!")
 
-root = Tk()
-
-app = App(root)
-
-root.mainloop()
-root.destroy()
+# root = Tk()
+#
+# app = Gui(root)
+#
+# root.mainloop()
+# root.destroy()

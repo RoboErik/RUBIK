@@ -26,7 +26,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
      inkscape:cx="444.75704"
-     inkscape:cy="595.11078"
+     inkscape:cy="918.35959"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -85,7 +85,9 @@
      inkscape:label="Layer 1">
     <g
        transform="translate(-13.985119,-1.889881)"
-       id="g4669">
+       id="g4669"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
       <circle
          id="path3701-6-4"
          cx="116.5155"
@@ -121,49 +123,50 @@
            id="path3701-6-1" />
       </g>
     </g>
-    <circle
-       style="stroke-width:2.765;fill:#f2f2f2;stroke:#b62d2d;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       r="12.000744"
-       cy="38.558777"
-       cx="50.36533"
-       id="path3701" />
     <g
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1"
-       transform="translate(1.1016522e-7,1.1358955)"
-       id="g4524">
-      <path
-         sodipodi:nodetypes="ccccc"
-         inkscape:connector-curvature="0"
-         d="m 50.459822,38.842262 c 3.596459,-4.237959 2.316452,-11.518608 2.316452,-11.518608 l -0.0486,-0.0097 c 0,0 -3.96875,6.236607 -2.267855,11.528274 z"
-         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="path4520" />
+       id="g7534"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
+      <circle
+         id="path3701"
+         cx="50.36533"
+         cy="38.558777"
+         r="12.000744"
+         style="stroke-width:2.765;fill:#f2f2f2;stroke:#b62d2d;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none" />
+      <g
+         id="g4524"
+         transform="translate(1.1016522e-7,1.1358955)"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1">
+        <path
+           id="path4520"
+           style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 50.459822,38.842262 c 3.596459,-4.237959 2.316452,-11.518608 2.316452,-11.518608 l -0.0486,-0.0097 c 0,0 -3.96875,6.236607 -2.267855,11.528274 z"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccc" />
+      </g>
+      <g
+         id="g4524-1"
+         transform="matrix(-0.06642378,0.63198005,-0.50553741,-0.05313412,73.447768,10.152372)"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1">
+        <path
+           id="path4520-7"
+           style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 50.459822,38.842262 c 3.596459,-4.237959 2.316452,-11.518608 2.316452,-11.518608 l -0.0486,-0.0097 c 0,0 -3.96875,6.236607 -2.267855,11.528274 z"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccc" />
+      </g>
+      <circle
+         id="path3701-0"
+         cx="50.113033"
+         cy="24.518715"
+         r="1.6953481"
+         style="fill:#f2f2f2;stroke:#b62d2d;stroke-width:0.3906123;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
-    <path
-       transform="scale(0.26458333)"
-       inkscape:connector-curvature="0"
-       id="path4543"
-       d="m 114.12819,142.80242 c -0.3803,-1.25206 -0.82014,-3.51987 -1.0145,-5.23074 -0.34734,-3.05741 -0.2902,-6.78904 0.15611,-10.19622 0.90434,-6.90388 3.34795,-14.47256 7.05039,-21.83749 0.72172,-1.43565 1.97962,-3.74873 2.01785,-3.71049 0.0743,0.0743 0.39726,3.32094 0.52852,5.31336 0.1105,1.6773 0.14881,6.39207 0.0662,8.14435 -0.52989,11.23641 -3.24447,20.17997 -8.1346,26.80061 -0.65922,0.89251 -0.62699,0.85803 -0.66994,0.71662 z"
-       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.65978074;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <g
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1"
-       transform="matrix(-0.06642378,0.63198005,-0.50553741,-0.05313412,73.447768,10.152372)"
-       id="g4524-1">
-      <path
-         sodipodi:nodetypes="ccccc"
-         inkscape:connector-curvature="0"
-         d="m 50.459822,38.842262 c 3.596459,-4.237959 2.316452,-11.518608 2.316452,-11.518608 l -0.0486,-0.0097 c 0,0 -3.96875,6.236607 -2.267855,11.528274 z"
-         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         id="path4520-7" />
-    </g>
-    <circle
-       style="fill:#f2f2f2;stroke:#b62d2d;stroke-width:0.3906123;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       r="1.6953481"
-       cy="24.518715"
-       cx="50.113033"
-       id="path3701-0" />
     <g
        transform="translate(15.345837)"
-       id="g6245">
+       id="g6245"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
       <rect
          style="fill:url(#pattern6224);fill-opacity:1;stroke:#000000;stroke-width:0.60000002;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4671"
@@ -327,7 +330,9 @@
       </g>
     </g>
     <g
-       id="g7485">
+       id="g7485"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
       <g
          style="stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          transform="rotate(-6,966.22656,-1539.9188)"
@@ -381,7 +386,9 @@
       </g>
     </g>
     <g
-       id="g7512">
+       id="g7512"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
       <g
          style="fill:#800000"
          transform="translate(4.6489369,85.731837)"
@@ -450,7 +457,9 @@
     </g>
     <g
        id="g7526"
-       transform="translate(-1.5875,2.6458334)">
+       transform="translate(-1.5875,2.6458334)"
+       inkscape:export-xdpi="206.84003"
+       inkscape:export-ydpi="206.84003">
       <g
          style="fill:#008000"
          transform="translate(6.1608414,129.19926)"

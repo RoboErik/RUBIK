@@ -1,16 +1,20 @@
 Requirements for running on Pi
 
-1) build rpi_ws281x
+1) install dependencies
+sudo apt-get install python-dev
 sudo apt-get install scons
+sudo apt-get install swig
+
+2) build rpi_ws281x
 cd Rubik/RubikSolver/rpi_ws281x
 scons
 
-2) setup python wrapper for rpi
+3) setup python wrapper for rpi
 sudo apt-get install python-dev swig
 cd python
 python setup.py build
 
-3) make RUBIK/run.sh executable
+4) make RUBIK/run.sh executable
 # cd to root of project
 chmod +x run.sh
 

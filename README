@@ -1,12 +1,13 @@
 Requirements for running on Pi
 
 1) install dependencies
-sudo apt-get install python-dev
-sudo apt-get install scons
-sudo apt-get install swig
+sudo apt-get install python-dev # Needed to build/debug python projects
+sudo apt-get install scons # Used by NeoPixel makefile
+sudo apt-get install swig # Used in installation
+sudo apt-get install tk # graphics library
 
 2) build rpi_ws281x
-cd Rubik/RubikSolver/rpi_ws281x
+cd Rubik/RubikSolver/rpi_ws281x # NeoPixel library
 scons
 
 3) setup python wrapper for rpi

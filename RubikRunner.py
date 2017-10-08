@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import time
-import tkinter
 
 from Rubik.GearRatios import gear_ratios
 from Rubik.SimonSays import simon_says
@@ -12,6 +11,7 @@ pins_setup = False
 
 try:
     # for running on the Pi
+    import Tkinter as tkinter
     from Rubik.RubikSolver import rubik_solver
     rubikSolver = rubik_solver.RubikSolver()
     from Rubik import pins
@@ -20,6 +20,7 @@ try:
 
 except ImportError:
     print("Not on Pi, solver/pins unavailable")
+    import tkinter
 
 active = []
 
@@ -55,6 +56,6 @@ for thread in active:
     thread.join()
 print("Threads have finished")
 
-root.destroy()
+#root.destroy()
 if pins_setup:
     pins.teardown()

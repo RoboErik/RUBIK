@@ -1,23 +1,38 @@
-from tkinter import *
 import os, time, threading
+import Queue
 
+try:
+    from Tkinter import *
+
+except ImportError:
+    from tkinter import *
 
 class Gui():
     master_ = None
     fullscreen_ = True
+    callback_queue = Queue.Queue()
 
     gear_icons = []
     gear_timer = None
+    exit_timer = None
     button = None
     hi_there = None
 
     def __init__(self, master):
-        super().__init__()
         self.master_ = master
         self.frame = Frame(master)
         self.frame.pack()
         self.configure_fullscreen()
         self.configure_buttons()
+        self.master_.after(20000, self.exit)
+
+    def from_main_thread_nonblocking(self):
+        while True:
+            try:
+                callback = self.callback_queue.get(False)  # doesn't block
+            except Queue.Empty:  # raised when queue is empty
+                break
+            callback()
 
     def configure_buttons(self):
         self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-1.png")))
@@ -64,6 +79,7 @@ class Gui():
     def exit(self):
         self.gear_timer.cancel()
         self.frame.quit()
+        self.master_.destroy()
 
     @staticmethod
     def say_hi():

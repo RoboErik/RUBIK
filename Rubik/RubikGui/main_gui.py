@@ -23,7 +23,7 @@ class Gui():
         self.frame.pack()
         self.configure_fullscreen()
         self.configure_buttons()
-        self.master_.after(10000, self.exit)
+        self.master_.after(5000, self.exit)
         self.master_.after(1000, self.turn_screen_on)
 
     def turn_screen_on(self):

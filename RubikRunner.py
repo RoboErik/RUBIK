@@ -27,8 +27,8 @@ except ImportError:
 root = tkinter.Tk()
 running = True
 
-#while running:
-for x in range(0, 2):
+while running:
+#for x in range(0, 2):
     active = []
 
     # Set up puzzle threads
@@ -37,7 +37,8 @@ for x in range(0, 2):
 
 
     print("Type s for SimonSays, g for GearRatio, r for RubikSolver.")
-    nextChar = 'G'  # utils.getChar()
+    #nextChar = 'G'
+    nextChar = utils.getChar()
 
     if nextChar.upper() == 'S':
         simonSays.start()
@@ -60,7 +61,8 @@ for x in range(0, 2):
     for thread in active:
         thread.join()
     print("Threads have finished. Run again? Y/N")
-    nextChar = 'N'  # utils.getChar()
+    # nextChar = 'N'  # utils.getChar()
+    nextChar = utils.getChar()
     if nextChar.upper() != 'Y':
         running = False
 

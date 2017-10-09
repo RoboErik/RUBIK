@@ -20,3 +20,9 @@ chmod +x run.sh
 
 Running:
 ./run.sh
+
+# To set it up to run on boot
+chmod +x run_start.sh
+pico /home/pi/.config/lxsession/LXDE-pi/autostart
+# add "@bash /home/pi/pywork/RUBIK/run_start.sh 2>/tmp/rerr.txt" to autostart
+# Be sure to change pywork/RUBIK/ to whatever directory run_start.sh is in

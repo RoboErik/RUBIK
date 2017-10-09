@@ -1,5 +1,4 @@
-import os, time, threading
-import Queue
+import os, time, threading, subprocess
 
 try:
     from Tkinter import *
@@ -10,7 +9,7 @@ except ImportError:
 class Gui():
     master_ = None
     fullscreen_ = True
-    callback_queue = Queue.Queue()
+    screen_on_process_ = None
 
     gear_icons = []
     gear_timer = None
@@ -24,17 +23,16 @@ class Gui():
         self.frame.pack()
         self.configure_fullscreen()
         self.configure_buttons()
-        self.master_.after(20000, self.exit)
+        self.master_.after(10000, self.exit)
+        self.master_.after(1000, self.turn_screen_on)
 
-    def from_main_thread_nonblocking(self):
-        while True:
-            try:
-                callback = self.callback_queue.get(False)  # doesn't block
-            except Queue.Empty:  # raised when queue is empty
-                break
-            callback()
+    def turn_screen_on(self):
+        # Force the screen to turn on
+        self.screen_on_process_ = subprocess.Popen('xset s reset && xset dpms force on',
+                                                 shell=True)
 
     def configure_buttons(self):
+        del self.gear_icons[:]
         self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-1.png")))
         self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-2.png")))
         self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-3.png")))
@@ -77,9 +75,15 @@ class Gui():
         self.gear_timer.start()
 
     def exit(self):
+        self.screen_on_process_.kill()
+        screen_off = subprocess.Popen('xset dpms force off && exit 0', shell=True)
         self.gear_timer.cancel()
         self.frame.quit()
-        self.master_.destroy()
+        self.button.destroy()
+        self.hi_there.destroy()
+        self.frame.destroy()
+        time.sleep(0.5)
+        screen_off.kill()
 
     @staticmethod
     def say_hi():

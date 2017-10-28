@@ -5,6 +5,11 @@ from . import switch_timer
 from .. import utils
 from .. import pins
 
+# For reading the color sensors
+import smbus
+from SDL_BM017CS.Adafruit_I2C import Adafruit_I2C
+from SDL_BM017CS.SDL_PC_BM017CS import SDL_BM017
+
 from .rpi_ws281x.python.neopixel import *
 
 # LED strip configuration:
@@ -26,6 +31,10 @@ MODE_PATTERN = 1
 strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS,
                           LED_CHANNEL, LED_STRIP)
 strip.begin()
+
+# I2C Bus for the color sensors
+bus = smbus.SMBus(1)
+address = 0x70
 
 
 # Does not solve a Rubik cube, but either times how long it took to solve or
@@ -73,12 +82,22 @@ class RubikSolver(threading.Thread):
 
     def run(self):
         self._setup()
-        rainbow(strip)
-        strip.setBrightness(0)
+        #rainbow(strip)
+        #strip.setBrightness(0)
+
         # strip.setPixelColor(1, 0xaa00aa)
         # strip.show()
         # self._stop_event.wait(6)
         # strip.setPixelColor(1, 0x000000)
+
+        test_color_sensors()
+        bm017 = SDL_BM017(True)
+        bm017.debug = False
+        set_all_leds(strip, 255)
+        for i in range(100):
+            print("Colors " + str(i) + ": " + str(bm017.getColors()))
+            time.sleep(.1)
+        set_all_leds(strip, 0)
         self._teardown()
 
 
@@ -90,6 +109,10 @@ def rainbow(strip, wait_ms=20, iterations=1):
         strip.show()
         time.sleep(wait_ms / 1000.0)
 
+def set_all_leds(strip, color):
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, color & 255)
+    strip.show()
 
 def wheel(pos):
     """Generate rainbow colors across 0-255 positions."""
@@ -101,3 +124,27 @@ def wheel(pos):
     else:
         pos -= 170
         return Color(0, pos * 3, 255 - pos * 3)
+
+
+def test_color_sensors():
+    bm017 = SDL_BM017(True)
+    bm017.debug = True
+    bm017.readStatus()
+
+    bm017.isSDL_BM017There()
+
+    bm017.getColors()
+    bm017.readStatus()
+
+    bm017.disableDevice()
+    bm017.setIntegrationTimeAndGain(0x00, 0x03)
+
+    bm017.getColors()
+    bm017.readStatus()
+
+    bm017.readStatus()
+
+    # this will turn on the LED if LEDON is connected to INT and LEDVDD is connected to VDD_LED
+    bm017.setInterrupt(True)
+    time.sleep(5.0)
+    bm017.setInterrupt(False)

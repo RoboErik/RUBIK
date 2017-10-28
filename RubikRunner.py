@@ -14,7 +14,6 @@ try:
     # for running on the Pi
     import Tkinter as tkinter
     from Rubik.RubikSolver import rubik_solver
-    rubikSolver = rubik_solver.RubikSolver()
     from Rubik import pins
     pins.setup()
     pins_setup = True
@@ -34,6 +33,8 @@ while running:
     # Set up puzzle threads
     simonSays = simon_says.SimonSays()
     gearRatio = gear_ratios.GearRatio()
+    if pins_setup:
+        rubikSolver = rubik_solver.RubikSolver()
 
 
     print("Type s for SimonSays, g for GearRatio, r for RubikSolver.")

@@ -1,5 +1,6 @@
 import threading
 import RPi.GPIO as GPIO
+import time
 from . import switch_timer
 from .. import utils
 from .. import pins
@@ -72,8 +73,18 @@ class RubikSolver(threading.Thread):
 
     def run(self):
         self._setup()
-        strip.setPixelColor(1, 0xaa00aa)
-        strip.show()
-        self._stop_event.wait(6)
-        strip.setPixelColor(1, 0x000000)
+        rainbow(strip)
+        strip.setBrightness(0)
+        # strip.setPixelColor(1, 0xaa00aa)
+        # strip.show()
+        # self._stop_event.wait(6)
+        # strip.setPixelColor(1, 0x000000)
         self._teardown()
+
+def rainbow(strip, wait_ms=20, iterations=1):
+	"""Draw rainbow that fades across all pixels at once."""
+	for j in range(256*iterations):
+		for i in range(strip.numPixels()):
+			strip.setPixelColor(i, wheel((i+j) & 255))
+		strip.show()
+		time.sleep(wait_ms/1000.0)

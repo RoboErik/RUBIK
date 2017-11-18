@@ -51,7 +51,7 @@ class ColorSensors:
     blue_color = 0
 
     __SDL_BM017_IntegrationTime = 0xF6
-    __SDL_BM017_Gain = 0x01
+    __SDL_BM017_Gain = 0x02
 
     __NUM_SENSORS = 9
     __SENSORS_PER_MUTEX = 3
@@ -135,6 +135,7 @@ class ColorSensors:
         self.red_color = (colorList[3] << 8) + (colorList[2])
         self.green_color = (colorList[5] << 8) + (colorList[4])
         self.blue_color = (colorList[7] << 8) + (colorList[6])
+        colorList = [self.clear_color, self.red_color, self.green_color, self.blue_color]
 
         if (self.debug):
             print("clear_color= ", self.clear_color)

@@ -87,17 +87,50 @@ class RubikSolver(threading.Thread):
         # strip.setPixelColor(1, 0x000000)
 
 #        test_color_sensors()
-        color_sensors = ColorSensors(True)
-        set_all_leds(strip, 255)
-        color_sensors.set_sensor(0)
-        for i in range(27):
+        color_sensors = ColorSensors()
+        set_all_leds(strip, Color(80, 60, 40))
+
+        incr_brightness = False
+        brightness = -20 if incr_brightness else 80
+        for i in range(99):
             sensor = i % 9
+            if incr_brightness:
+                if sensor is 0:
+                    brightness += 20
+                    print("\n")
+                set_all_leds(strip, Color(brightness, brightness, brightness))
             color_sensors.set_sensor(sensor)
-            print("Colors " + str(sensor) + ": " + str(color_sensors.getColors()))
+            colors = color_sensors.getColors()
+            guess = str(guess_color(colors))
+            print(guess + " guessed at brightness " + str(brightness) + " Colors " + str(sensor) + ": " + str(colors))
             time.sleep(.1)
         set_all_leds(strip, 0)
         color_sensors.clear_active()
         self._teardown()
+
+def guess_color(colors):
+    CLEAR = 0
+    RED = 1
+    GREEN = 2
+    BLUE = 3
+
+    if colors[CLEAR] < 100:
+        return "none"
+
+    red_green_ratio = colors[RED]/float(colors[GREEN])
+    red_blue_ratio = colors[RED]/float(colors[BLUE])
+    green_blue_ratio = colors[GREEN]/float(colors[BLUE])
+    ratio_string = " r/g=" + str(red_green_ratio) + " r/b=" + str(red_blue_ratio)
+
+    if 0.9 < red_green_ratio < 1.1:
+        if 0.9 < red_blue_ratio < 1.1:
+            return "white" + ratio_string
+
+    if red_green_ratio > 1.5:
+        if red_blue_ratio > 1.2:
+            return "red" + ratio_string
+
+    return "unknown r/g=" + str(red_green_ratio) + " r/b=" + str(red_blue_ratio)
 
 
 def rainbow(strip, wait_ms=20, iterations=1):
@@ -110,7 +143,7 @@ def rainbow(strip, wait_ms=20, iterations=1):
 
 def set_all_leds(strip, color):
     for i in range(strip.numPixels()):
-        strip.setPixelColor(i, color & 255)
+        strip.setPixelColor(i, color & 0xffffff)
     strip.show()
 
 def wheel(pos):

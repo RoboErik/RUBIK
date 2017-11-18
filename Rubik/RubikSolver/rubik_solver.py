@@ -6,9 +6,7 @@ from .. import utils
 from .. import pins
 
 # For reading the color sensors
-import smbus
-from SDL_BM017CS.Adafruit_I2C import Adafruit_I2C
-from SDL_BM017CS.SDL_PC_BM017CS import SDL_BM017
+from color_sensors import ColorSensors
 
 from .rpi_ws281x.python.neopixel import *
 
@@ -32,9 +30,7 @@ strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, 
                           LED_CHANNEL, LED_STRIP)
 strip.begin()
 
-# I2C Bus for the color sensors
-bus = smbus.SMBus(1)
-address = 0x70
+color_sensors = None
 
 
 # Does not solve a Rubik cube, but either times how long it took to solve or
@@ -90,14 +86,17 @@ class RubikSolver(threading.Thread):
         # self._stop_event.wait(6)
         # strip.setPixelColor(1, 0x000000)
 
-        test_color_sensors()
-        bm017 = SDL_BM017(True)
-        bm017.debug = False
+#        test_color_sensors()
+        color_sensors = ColorSensors(True)
         set_all_leds(strip, 255)
-        for i in range(100):
-            print("Colors " + str(i) + ": " + str(bm017.getColors()))
+        color_sensors.set_sensor(0)
+        for i in range(27):
+            sensor = i % 9
+            color_sensors.set_sensor(sensor)
+            print("Colors " + str(sensor) + ": " + str(color_sensors.getColors()))
             time.sleep(.1)
         set_all_leds(strip, 0)
+        color_sensors.clear_active()
         self._teardown()
 
 
@@ -127,7 +126,7 @@ def wheel(pos):
 
 
 def test_color_sensors():
-    bm017 = SDL_BM017(True)
+    bm017 = ColorSensors(True)
     bm017.debug = True
     bm017.readStatus()
 

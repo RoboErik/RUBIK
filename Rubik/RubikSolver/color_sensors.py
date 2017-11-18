@@ -2,7 +2,8 @@
 
 import time
 import smbus
-from Adafruit_I2C import Adafruit_I2C
+import math
+from SDL_BM017CS.Adafruit_I2C import Adafruit_I2C
 
 
 # ===========================================================================
@@ -16,10 +17,17 @@ from Adafruit_I2C import Adafruit_I2C
 
 
 
-class SDL_BM017:
+class ColorSensors:
     i2c = None
+    mutexe_i2cs = []
 
     # i2C Addresses
+
+    __ADDR_Mutex0 = 0x70 # register of the first mutex
+    __ADDR_Mutex1 = 0x71 # register of the first mutex
+    __ADDR_Mutex2 = 0x72 # register of the first mutex
+    __CMD_MutexDisable = 0x00 # command to disable all channels
+    __CMD_MutexZero = 0x04 # command to enable the first channel
 
     __SDL_BM017_SensorAddress = 0x29
     __SDL_BM017_EnableAddress = 0xa0  # register address + command bits
@@ -43,21 +51,52 @@ class SDL_BM017:
     blue_color = 0
 
     __SDL_BM017_IntegrationTime = 0xF6
-    __SDL_BM017_Gain = 0x00
+    __SDL_BM017_Gain = 0x01
 
+    __NUM_SENSORS = 9
+    __SENSORS_PER_MUTEX = 3
+
+    active_mutex = None
     debug = False
 
     def __init__(self, debug=False):
         self.i2c = Adafruit_I2C(self.__SDL_BM017_SensorAddress)
+        self.mutexe_i2cs.append(Adafruit_I2C(self.__ADDR_Mutex0))
+        self.mutexe_i2cs.append(Adafruit_I2C(self.__ADDR_Mutex1))
+        self.mutexe_i2cs.append(Adafruit_I2C(self.__ADDR_Mutex2))
 
-        self.i2c.write8(self.__SDL_BM017_ATimeAddress, self.__SDL_BM017_IntegrationTime)
-        self.i2c.write8(self.__SDL_BM017_ControlAddress, self.__SDL_BM017_Gain)
-        self.i2c.write8(self.__SDL_BM017_EnableAddress, 0x03)
-        time.sleep(0.700)
+        for i in range(self.__NUM_SENSORS):
+            self.clear_active()
+            self.set_sensor(i)
+            time.sleep(0.100)
+            self.i2c.write8(self.__SDL_BM017_ATimeAddress, self.__SDL_BM017_IntegrationTime)
+            self.i2c.write8(self.__SDL_BM017_ControlAddress, self.__SDL_BM017_Gain)
+            self.i2c.write8(self.__SDL_BM017_EnableAddress, 0x03)
+            time.sleep(0.100)
+
         self.debug = debug
 
         if (self.debug):
             print("SDL_BM017 initialized")
+
+    def set_sensor(self, sensor):
+        if sensor >= self.__NUM_SENSORS:
+            print("Tried to set sensor to ", sensor)
+            return
+        mutex = self.mutexe_i2cs[int(math.floor(sensor / self.__SENSORS_PER_MUTEX))]
+        if mutex is not self.active_mutex:
+            self.clear_active()
+
+        cmd = self.__CMD_MutexZero + (sensor % self.__SENSORS_PER_MUTEX)
+        mutex.write8(0, cmd)
+        time.sleep(0.02)
+        self.active_mutex = mutex
+
+    def clear_active(self):
+        if self.active_mutex is None:
+            return
+        self.active_mutex.write8(0, self.__CMD_MutexDisable)
+        self.active_mutex = None
 
     def isSDL_BM017There(self):
 
@@ -87,6 +126,10 @@ class SDL_BM017:
 
         if (self.debug):
             print("ColorList = ", colorList)
+
+        if colorList is -1:
+            print("Error reading colors")
+            return
 
         self.clear_color = (colorList[1] << 8) + (colorList[0])
         self.red_color = (colorList[3] << 8) + (colorList[2])

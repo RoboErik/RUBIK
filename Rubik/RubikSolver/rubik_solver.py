@@ -85,10 +85,11 @@ class RubikSolver(threading.Thread):
         # strip.show()
         # self._stop_event.wait(6)
         # strip.setPixelColor(1, 0x000000)
+        csv = open("csv_colors.txt", 'w')
 
 #        test_color_sensors()
         color_sensors = ColorSensors()
-        set_all_leds(strip, Color(80, 60, 40))
+        set_all_leds(strip, Color(80, 60, 60))
 
         incr_brightness = False
         brightness = -20 if incr_brightness else 80
@@ -102,11 +103,14 @@ class RubikSolver(threading.Thread):
             color_sensors.set_sensor(sensor)
             colors = color_sensors.getColors()
             guess = str(guess_color(colors))
+            csv.write(str(sensor) + ", " + guess + "\n")
             print(guess + " guessed at brightness " + str(brightness) + " Colors " + str(sensor) + ": " + str(colors))
             time.sleep(.1)
         set_all_leds(strip, 0)
         color_sensors.clear_active()
+        csv.close()
         self._teardown()
+
 
 def guess_color(colors):
     CLEAR = 0
@@ -120,7 +124,10 @@ def guess_color(colors):
     red_green_ratio = colors[RED]/float(colors[GREEN])
     red_blue_ratio = colors[RED]/float(colors[BLUE])
     green_blue_ratio = colors[GREEN]/float(colors[BLUE])
-    ratio_string = " r/g=" + str(red_green_ratio) + " r/b=" + str(red_blue_ratio)
+    ratio_string = " r/g, " + str(red_green_ratio) + ", r/b, " + str(red_blue_ratio) + ", g/b, " + str(green_blue_ratio)
+
+    if True:
+        return ratio_string
 
     if 0.9 < red_green_ratio < 1.1:
         if 0.9 < red_blue_ratio < 1.1:

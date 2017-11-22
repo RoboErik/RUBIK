@@ -34,6 +34,7 @@ class LedStrip:
 
     def set_brightness(self, brightness):
         self.strip.setBrightness(brightness)
+        self.strip.show()
 
     def rainbow(self, wait_ms=20, iterations=1):
         """Draw rainbow that fades across all pixels at once."""

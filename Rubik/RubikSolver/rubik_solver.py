@@ -29,8 +29,8 @@ LED_CODES = ['R', 'G', 'B', 'Y', 'O', 'W']
 TEST_PATTERN = ['W', 'G', 'B', 'Y', 'O', 'R', 'Y', 'O', 'R']
 LED_PATTERN_BRIGHTNESS = 20
 
-LED_SENSOR_COLOR = Color(80, 60, 60)
-LED_SENSOR_BRIGHTNESS = 100
+LED_SENSOR_COLOR = Color(255, 235, 130)
+LED_SENSOR_BRIGHTNESS = 75
 
 # Does not solve a Rubik cube, but either times how long it took to solve or
 # requires a specific pattern be created.
@@ -135,20 +135,20 @@ class RubikSolver(threading.Thread):
         self.led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
         self.led_strip.set_all_leds(LED_SENSOR_COLOR)
         incr_brightness = False
-        brightness = -20 if incr_brightness else 80
+        brightness = -5 if incr_brightness else LED_SENSOR_BRIGHTNESS
         csv.write("Sensor, Red/Green ratio, Red/Blue ratio, Green/Blue ratio, sample\n")
         for i in range(99):
             sensor = i % 9
-            if incr_brightness:
-                if sensor is 0:
-                    brightness += 20
-                    print("\n")
-                    self.led_strip.set_all_leds(Color(brightness, brightness, brightness))
+            if sensor is 0:
+                print("\nSAMPLE " + str(i/9) + ":\n")
+                if incr_brightness:
+                    brightness += 10
+                    self.led_strip.set_brightness(brightness)
             # self.color_sensors.set_sensor(sensor)
             # colors = self.color_sensors.getColors()
             guess = self._read_color(sensor)
             csv.write(str(sensor) + ", " + guess + ", " + str(i) + "\n")
-            print(guess + " guessed at brightness " + str(brightness))
+            print(str(sensor) + ": " + guess + " at Brightness=" + str(brightness))
             time.sleep(.1)
 
 
@@ -158,8 +158,8 @@ def guess_color(colors):
     GREEN = 2
     BLUE = 3
 
-    if colors[CLEAR] < 100:
-        return "none"
+    if colors[CLEAR] < 10 or colors[GREEN] < 10 or colors[BLUE] < 10:
+        return "none, none, none"
 
     red_green_ratio = colors[RED]/float(colors[GREEN])
     red_blue_ratio = colors[RED]/float(colors[BLUE])

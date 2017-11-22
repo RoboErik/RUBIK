@@ -6,17 +6,6 @@ import math
 from SDL_BM017CS.Adafruit_I2C import Adafruit_I2C
 
 
-# ===========================================================================
-# SDL_BM017 / TCS34725 color sensor i2c driver Class
-# SwitchDoc Labs / Project Curacao
-# originally from Project Curacao
-# Version 1.1
-# 2/14/14
-#
-# ===========================================================================
-
-
-
 class ColorSensors:
     i2c = None
     mutexe_i2cs = []

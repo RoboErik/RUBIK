@@ -72,3 +72,4 @@ if pins_setup:
     pins.teardown()
 
 print("Kill")
+subprocess.Popen('sudo killall python', shell=True)

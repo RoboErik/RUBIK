@@ -3,6 +3,7 @@ import time
 
 from .rpi_ws281x.python.neopixel import *
 
+LOG = True
 
 class LedStrip:
     # LED strip configuration:
@@ -21,6 +22,8 @@ class LedStrip:
     strip.begin()
 
     def set_led(self, led, color):
+        if LOG:
+            print("Setting led " + str(led) + " to " + str(color))
         if 0 <= led < self.LED_COUNT:
             self.strip.setPixelColor(led, color & 0xffffff)
             self.strip.show()
@@ -28,11 +31,16 @@ class LedStrip:
             print("led " + str(led) + " does not exist")
 
     def set_all_leds(self, color):
+        if LOG:
+            print("Setting all leds to " + str(color))
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, color & 0xffffff)
+            time.sleep(0.02)
         self.strip.show()
 
     def set_brightness(self, brightness):
+        if LOG:
+            print("Setting brightness to " + str(brightness))
         self.strip.setBrightness(brightness)
         self.strip.show()
 

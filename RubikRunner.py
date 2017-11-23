@@ -49,10 +49,6 @@ while running:
         active.append(gearRatio)
     elif nextChar.upper() == 'R':
         rubikSolver.start()
-        print("sleeping for 3\n")
-        time.sleep(3)  # TODO remove
-        print("done sleeping\n")
-        rubikSolver.stop()
         active.append(rubikSolver)
 
     # Start the UI thread

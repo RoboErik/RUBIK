@@ -7,6 +7,7 @@ from Rubik.SimonSays import simon_says
 #
 from Rubik.RubikGui import main_gui
 from Rubik import utils
+from Rubik import state_controller
 
 pins_setup = False
 
@@ -31,13 +32,16 @@ while running:
     active = []
 
     # Set up puzzle threads
+    gui = main_gui.Gui(root)
     simonSays = simon_says.SimonSays()
     gearRatio = gear_ratios.GearRatio()
     if pins_setup:
         rubikSolver = rubik_solver.RubikSolver()
 
+    stateController = state_controller.StateController(gui, rubikSolver, simonSays)
 
-    print("Type s for SimonSays, g for GearRatio, r for RubikSolver.")
+
+    print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI.")
     #nextChar = 'G'
     nextChar = utils.getChar()
 
@@ -50,9 +54,11 @@ while running:
     elif nextChar.upper() == 'R':
         rubikSolver.start()
         active.append(rubikSolver)
+    elif nextChar.upper() == 'U':
+        stateController.start()
+        active.append(stateController)
 
     # Start the UI thread
-    gui = main_gui.Gui(root)
     root.mainloop()
     print("Waiting for threads to finish\n")
     for thread in active:

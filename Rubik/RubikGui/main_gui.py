@@ -1,4 +1,7 @@
 import os, time, threading, subprocess
+from Queue import *
+from .. import event as Events
+import tkFont
 
 try:
     from Tkinter import *
@@ -6,28 +9,49 @@ try:
 except ImportError:
     from tkinter import *
 
+UI_QUIT = -1
 UI_HOME = 00
 
+UI_TIMER_START = 10
 UI_TIMER_HOME = 10
 UI_TIMER_READY = 11
 UI_TIMER_RUNNING = 12
 UI_TIMER_CONFIRM = 13
+UI_TIMER_END = 19
 
+UI_MATCH_START = 20
 UI_MATCH_HOME = 20
 UI_MATCH_READY = 21
 UI_MATCH_SUCCESS = 22
 UI_MATCH_FAILURE = 23
+UI_MATCH_END = 29
 
+UI_SIMON_START = 30
 UI_SIMON_HOME = 30
 UI_SIMON_PLAYING = 31
+UI_SIMON_END = 39
 
 _BUTTON_WIDTH = 200
 _BUTTON_HEIGHT = 200
+
+
+class UiCommand:
+    ui_state = None
+    data = None
+
+    def __init__(self, ui_state, data=None):
+        self.ui_state = ui_state
+        self.data = data
+
 
 class Gui():
     master_ = None
     fullscreen_ = True
     screen_on_process_ = None
+
+    # A 1x1 pixel image for buttons displaying text. This allows their size to
+    # be specified in pixels, since text only button sizes are in characters.
+    pixel_icon = None
 
     # The icon for the pattern matching game
     match_icon = None
@@ -68,14 +92,13 @@ class Gui():
     # The icon/button showing which buttons to press to reset scores
     button_reset = None
 
-    # Callback for button presses
-    callback = None
+    # Queue's for communicating with other threads
+    command_queue = Queue()
+    event_queue = None
 
-    gear_icons = []
-    gear_timer = None
-    exit_timer = None
     button = None
     hi_there = None
+    did_exit = False
 
     def __init__(self, master):
         self.master_ = master
@@ -88,8 +111,21 @@ class Gui():
         self.configure_fullscreen()
         self.configure_buttons()
         self.frame.pack(fill="both", expand=True)
-        self.master_.after(5000, self.exit)
+        self.master_.after(60000, self.exit)
+        self.master_.after(100, self.poll_queue)
         self.master_.after(1000, self.turn_screen_on)
+
+    def poll_queue(self):
+        try:
+            command = self.command_queue.get(False)
+            if command.ui_state == UI_QUIT:
+                self.exit()
+            else:
+                self.set_ui_state(command.ui_state, data=command.data)
+            self.command_queue.task_done()
+        except Empty:
+            pass
+        self.master_.after(100, self.poll_queue)
 
     def turn_screen_on(self):
         # Force the screen to turn on
@@ -97,6 +133,7 @@ class Gui():
                                                    shell=True)
 
     def configure_buttons(self):
+        self.pixel_icon = PhotoImage(width=1, height=1)
         self.match_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "rubik-match.png"))
         self.timer_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "rubik-time.png"))
         self.simon_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "simon-all.png"))
@@ -121,11 +158,19 @@ class Gui():
             width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
         )
         self.button1.grid(row=1, column=0)
+
+        # Python is the worst. To keep the button from resizing with text it
+        # needs to be in a frame with pack_propagate(0). =p
+        button2_frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        button2_frame.grid(row=1, column=1)
+        button2_frame.pack_propagate(0)
+        time_font = tkFont.Font(size=22)
         self.button2 = Button(
-            self.frame, image=self.button2_icon, command=self.on_press_2,
+            button2_frame, image=self.button2_icon, compound="center",
+            font=time_font, command=self.on_press_2,
             width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
         )
-        self.button2.grid(row=1, column=1)
+        self.button2.pack(expand=False, fill=None)
         self.button3 = Button(
             self.frame, image=self.button3_icon, command=self.on_press_3,
             width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
@@ -133,33 +178,6 @@ class Gui():
         self.button3.grid(row=1, column=2)
 
         self.set_ui_state(UI_HOME)
-
-        # match_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "rubik-match"))
-        # self.match_button = Button(
-        #     self.frame, image=match_icon
-        # )
-
-        # del self.gear_icons[:]
-        # self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-1.png")))
-        # self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-2.png")))
-        # self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-3.png")))
-        # self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-4.png")))
-        # self.gear_icons.append(PhotoImage(file=os.path.join("Rubik", "Assets", "gear-5.png")))
-        #
-        # self.button = Button(
-        #     self.frame, text="QUIT", fg="red", command=self.exit
-        # )
-        # self.button.pack(side=LEFT)
-        # self.button.config(image=self.gear_icons[0])
-        # self.button.curr_gear = 0
-        #
-        # self.hi_there = Button(self.frame, text="Hello", command=self.say_hi)
-        # self.hi_there.pack(side=LEFT)
-        # image = PhotoImage(file=os.path.join("Rubik", "Assets", "rubik-time.png"))
-        # self.hi_there.config(image=image)
-        # self.hi_there.image = image
-        #
-        # self.change_gear()
 
     def configure_fullscreen(self):
         self.fullscreen_ = True
@@ -175,68 +193,76 @@ class Gui():
         self.fullscreen_ = False
         self.master_.attributes("-fullscreen", self.fullscreen_)
 
-    def set_ui_state(self, ui_state):
+    def set_event_queue(self, queue):
+        self.event_queue = queue
+
+    def set_ui_state(self, ui_state, data=""):
         if ui_state == UI_HOME:
             self.label1.config(image=self.timer_icon)
             self.label2.config(image=self.match_icon)
             self.label3.config(image=self.simon_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=self.button2_icon)
+            self.button2.config(image=self.button2_icon, text="")
             self.button3.config(image=self.button3_icon)
         elif ui_state == UI_TIMER_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.timer_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=None, text="02:55.44")
+            self.button2.config(image=self.pixel_icon, text=data)
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_MATCH_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.match_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=None, text="02:55.44")
+            self.button2.config(image=self.pixel_icon, text=data)
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_SIMON_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.simon_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=None, text="42")
+            self.button2.config(image=self.pixel_icon, text=data)
             self.button3.config(image=self.button2_icon)
 
-    # def change_gear(self):
-    #     self.button.curr_gear = (self.button.curr_gear + 1) % len(self.gear_icons)
-    #     self.button.config(image=self.gear_icons[self.button.curr_gear])
-    #     self.gear_timer = threading.Timer(0.1, self.change_gear)
-    #     self.gear_timer.start()
-
     def exit(self):
+        if self.did_exit:
+            return
         self.screen_on_process_.kill()
         screen_off = subprocess.Popen('xset dpms force off && exit 0', shell=True)
-        #self.gear_timer.cancel()
         self.frame.quit()
-        #self.button.destroy()
-        #self.hi_there.destroy()
         self.frame.destroy()
         time.sleep(0.5)
         screen_off.kill()
+        self.did_exit = True
 
     def on_press_1(self):
         print("Button1 pressed")
-        self.callback.on_press(1)
+        if self.event_queue is not None:
+            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON1)
+            self.event_queue.put(event)
 
     def on_press_2(self):
         print("Button2 pressed")
-        self.callback.on_press(2)
+        if self.event_queue is not None:
+            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
+            self.event_queue.put(event)
 
     def on_press_3(self):
         print("Button3 pressed")
-        self.callback.on_press(3)
+        if self.event_queue is not None:
+            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
+            self.event_queue.put(event)
 
     def on_press_reset(self):
         print("Reset pressed")
-        self.callback.on_press(9)
+        if self.event_queue is not None:
+            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON_RESET)
+            self.event_queue.put(event)
+
+    def get_queue(self):
+        return self.command_queue
 
     @staticmethod
     def say_hi():
@@ -249,10 +275,3 @@ class Gui():
         # root.mainloop()
         # root.destroy()
 
-
-class Callback:
-    def __init__(self):
-        pass
-
-    def on_press(self, which):
-        raise NotImplementedError("Must implement on_press(which)")

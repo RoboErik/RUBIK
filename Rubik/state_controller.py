@@ -1,10 +1,12 @@
 import threading
-import time
+import time, cPickle
+from Queue import *
 
 from RubikGui import main_gui as Gui
-from RubikSolver.rubik_solver import RubikSolver
-from SimonSays.simon_says import SimonSays
+from RubikSolver import rubik_solver as Rubik
+from SimonSays import simon_says as Simon
 from . import utils
+from event import *
 
 STATE_EXIT = -1
 STATE_HOME = 00
@@ -27,7 +29,6 @@ STATE_MATCH_CONTINUE = 28
 
 STATE_SIMON_HOME = 30
 STATE_SIMON_PLAYING = 31
-STATE_SIMON_UPDATE = 32
 
 STATE_RESET = 90
 STATE_RESET_CONFIRMED = 91
@@ -50,8 +51,7 @@ STATE_STRINGS = {
     STATE_MATCH_UPDATE: "MATCH UPDATE",
     STATE_MATCH_CONTINUE: "MATCH CONTINUE",
     STATE_SIMON_HOME: "SIMON HOME",
-    STATE_SIMON_PLAYING: "SIMON PLAYING",
-    STATE_SIMON_UPDATE: "SIMON UPDATE"
+    STATE_SIMON_PLAYING: "SIMON PLAYING"
 }
 
 STATE_TO_UI = {
@@ -66,32 +66,6 @@ STATE_TO_UI = {
     STATE_MATCH_FAILURE: Gui.UI_MATCH_FAILURE,
     STATE_SIMON_HOME: Gui.UI_SIMON_HOME,
     STATE_SIMON_PLAYING: Gui.UI_SIMON_PLAYING
-}
-
-EVENT_DEFAULT = 0
-EVENT_BUTTON1 = 1
-EVENT_BUTTON2 = 2
-EVENT_BUTTON3 = 3
-EVENT_BUTTON4 = 4
-EVENT_BUTTON5 = 5
-EVENT_CUBE_LIFT = 6
-EVENT_CUBE_SET = 7
-EVENT_SUCCESS = 8
-EVENT_FAILURE = 9
-EVENT_BUTTON_RESET = -1
-
-EVENT_STRINGS = {
-    EVENT_DEFAULT: "DEFAULT",
-    EVENT_BUTTON1: "BUTTON1",
-    EVENT_BUTTON2: "BUTTON2",
-    EVENT_BUTTON3: "BUTTON3",
-    EVENT_BUTTON4: "BUTTON4",
-    EVENT_BUTTON5: "BUTTON5",
-    EVENT_CUBE_LIFT: "CUBE LIFT",
-    EVENT_CUBE_SET: "CUBE SET",
-    EVENT_SUCCESS: "SUCCESS",
-    EVENT_FAILURE: "FAILURE",
-    EVENT_BUTTON_RESET: "RESET"
 }
 
 TRANSITION_MAP = {
@@ -153,10 +127,7 @@ TRANSITION_MAP = {
     },
     STATE_SIMON_PLAYING: {
         EVENT_SUCCESS: STATE_SIMON_PLAYING,
-        EVENT_FAILURE: STATE_SIMON_UPDATE
-    },
-    STATE_SIMON_UPDATE: {
-        EVENT_DEFAULT: STATE_SIMON_HOME
+        EVENT_FAILURE: STATE_SIMON_HOME
     }
 }
 
@@ -169,42 +140,114 @@ def get_event_string(event):
     return EVENT_STRINGS.get(event, "UNKNOWN EVENT")
 
 
-# Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
-class StateController (threading.Thread, Gui.Callback):
+def ms_to_time_string(ms):
+    mins = ms / (60 * 1000)
+    seconds = (ms / 1000) % 60
+    ms = (ms % 1000) / 10  # only get two sig figs
+    return "%02d:%02d.%02d" % (mins, seconds, ms)
 
+
+# Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
+class StateController (threading.Thread):
+
+    _in_game = False
+    _scores = None
+    _temp_scores = None
     _state = STATE_HOME
     _ui_state = Gui.UI_HOME
     _needs_update = False
 
     _gui = None
+    _gui_queue = None
     _solver = None
+    _solver_queue = None
     _simon = None
+    _simon_queue = None
+
+    _event_queue = Queue()
 
     def __init__(self, gui, solver, simon):
         self._gui = gui
+        self._gui_queue = gui.get_queue()
+        gui.set_event_queue(self._event_queue)
+
         self._solver = solver
+
         self._simon = simon
+        self._simon_queue = simon.get_queue()
+        simon.set_event_queue(self._event_queue)
+        simon.start()
+
         self._gui.set_ui_state(Gui.UI_HOME)
+        self.load_scores()
+        super(StateController, self).__init__()
+
+    def load_scores(self):
+        try:
+            score_file = open("puzzle_scores.txt", mode='r')
+            self._scores = cPickle.load(score_file)
+        except IOError:
+            print("Score file not created yet")
+            self._scores = {
+                "time": 3599990, #59:59.99
+                "match": 3599990,
+                "simon": 0,
+                "gears": False
+            }
+        self._temp_scores = {
+            "time": 3599990,  # 59:59.99
+            "match": 3599990,
+            "simon": 0,
+            "gears": False
+        }
+
+    def save_scores(self):
+        score_file = open("puzzle_scores.txt", mode='w')
+        cPickle.dump(self._scores, score_file)
 
     def get_ui_for_state(self):
         return STATE_TO_UI.get(self._state, self._ui_state)
 
-    def on_press(self, which):
-        self.handle_event(which)
+    def get_score_string_for_ui(self, ui_state):
+        if Gui.UI_TIMER_START <= ui_state <= Gui.UI_TIMER_END:
+            return ms_to_time_string(self._scores["time"])
+        if Gui.UI_MATCH_START <= ui_state <= Gui.UI_MATCH_END:
+            return ms_to_time_string(self._scores["match"])
+        if Gui.UI_SIMON_START <= ui_state <= Gui.UI_SIMON_END:
+            return str(self._scores["simon"])
+        return ""
+
+    def check_queue(self):
+        try:
+            event = self._event_queue.get(False)
+            self.handle_event(event)
+            self._event_queue.task_done()
+        except Empty:
+            pass
 
     def handle_event(self, event):
-        print("Handling event " + get_event_string(event))
+        print("Handling event " + get_event_string(event.event))
+        if event.source == SOURCE_SIMON and event.event == EVENT_FAILURE:
+            if event.data > self._scores["simon"]:
+                self._scores["simon"] = event.data
+                self.save_scores()
         curr_state = self._state
-        next_state = TRANSITION_MAP.get(curr_state).get(event, curr_state)
+        next_state = TRANSITION_MAP.get(curr_state).get(event.event, curr_state)
         if next_state == curr_state:
             print("No transition from " + get_state_string(curr_state)
-                  + " on event " + get_event_string(event))
+                  + " on event " + get_event_string(event.event))
             return
         self.transition(curr_state, next_state)
 
     def transition(self, from_state, to_state):
         print("Transitioning from " + get_state_string(from_state)
               + " to " + get_state_string(to_state))
+        if to_state == STATE_SIMON_PLAYING:
+            self._simon_queue.put(Simon.Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_PLAYING))
+            self._in_game = True
+        elif from_state == STATE_SIMON_PLAYING:
+            self._simon_queue.put(Simon.Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_LISTENING))
+            self._in_game = False
         self._state = to_state
         self._needs_update = True
 
@@ -212,23 +255,30 @@ class StateController (threading.Thread, Gui.Callback):
         print("Running state controller!")
         while True:
             if self._state == STATE_EXIT:
-                self._gui.exit()
+                self._gui_queue.put(Gui.UiCommand(Gui.UI_QUIT))
+                self._simon_queue.put(Simon.Command(Simon.COMMAND_QUIT))
                 break
             if self._needs_update:
                 next_ui = self.get_ui_for_state()
                 if next_ui != self._ui_state:
-                    self._gui.set_ui_state(next_ui)
+                    command = Gui.UiCommand(next_ui, self.get_score_string_for_ui(next_ui))
+                    self._gui_queue.put(command)
                     self._ui_state = next_ui
                     print("Updated UI to " + str(next_ui))
                 self._needs_update = False
 
-            print("Enter (q)uit or 0-9 for events")
-            key = utils.getChar()
-            if key.upper() == 'Q':
-                self._state = STATE_EXIT
+            if self._in_game:
+                time.sleep(0.1)
             else:
-                event = key - '0'
-                self.handle_event(int(event))
+                print("Enter (q)uit or 0-9 for events")
+                key = utils.getChar()
+                if key.upper() == 'Q':
+                    self._state = STATE_EXIT
+                else:
+                    event = ord(key) - ord('0')
+                    self._event_queue.put(Event(SOURCE_OTHER, event))
+
+            self.check_queue()
 
         return
 

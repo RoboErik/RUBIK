@@ -23,7 +23,6 @@ except ImportError:
     print("Not on Pi, solver/pins unavailable")
     import tkinter
 
-
 root = tkinter.Tk()
 running = True
 

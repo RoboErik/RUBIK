@@ -1,8 +1,4 @@
 class Event:
-    source = None
-    event = None
-    data = None
-
     def __init__(self, source, event, data=None):
         self.source = source
         self.event = event

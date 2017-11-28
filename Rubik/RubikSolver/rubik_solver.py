@@ -70,9 +70,6 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         threading.Thread.__init__(self)
         queue_common.QueueCommon.__init__(self)
 
-    def set_mode(self, mode):
-        self._mode = mode
-
     def handle_command(self, command):
         if command.command == COMMAND_SET_MODE:
             self._mode = command.data
@@ -160,6 +157,8 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                     csv.close()
                 elif value == 'g':
                     self.test_guessing()
+                elif value == 'q':
+                    self._mode = MODE_QUIT
             elif self._mode == MODE_IDLE:
                 time.sleep(0.1)
             elif self._mode == MODE_PATTERN:

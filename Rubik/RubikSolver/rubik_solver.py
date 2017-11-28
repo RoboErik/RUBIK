@@ -150,7 +150,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
         while self._mode != MODE_QUIT:
             if self._mode == MODE_TEST:
-                print("test (p)attern, (g)uessing, or (c)ollect data?")
+                print("test (p)attern, (g)uessing, or (c)ollect data? (q)uit")
                 value = utils.getChar()
                 if value == 'p':
                     self.test_pattern_display()
@@ -162,9 +162,10 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                     self.test_guessing()
             elif self._mode == MODE_IDLE:
                 time.sleep(0.1)
-
-        self.check_queue()
-        self._teardown()
+            elif self._mode == MODE_PATTERN:
+                time.sleep(0.1)
+            self.check_queue()
+            self._teardown()
 
     def test_pattern_display(self):
         self._pattern = TEST_PATTERN

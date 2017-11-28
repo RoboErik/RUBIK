@@ -1,6 +1,7 @@
 import os, time, threading, subprocess
 from Queue import *
 from .. import event as Events
+from .. import queue_common
 import tkFont
 
 try:
@@ -8,6 +9,8 @@ try:
 
 except ImportError:
     from tkinter import *
+
+Command = queue_common.Command
 
 UI_QUIT = -1
 UI_HOME = 00
@@ -35,72 +38,60 @@ _BUTTON_WIDTH = 200
 _BUTTON_HEIGHT = 200
 
 
-class UiCommand:
-    ui_state = None
-    data = None
-
-    def __init__(self, ui_state, data=None):
-        self.ui_state = ui_state
-        self.data = data
-
-
-class Gui():
-    master_ = None
-    fullscreen_ = True
-    screen_on_process_ = None
-
-    # A 1x1 pixel image for buttons displaying text. This allows their size to
-    # be specified in pixels, since text only button sizes are in characters.
-    pixel_icon = None
-
-    # The icon for the pattern matching game
-    match_icon = None
-    # The icon for the Rubik solving game
-    timer_icon = None
-    # The icon for the Simon Says game
-    simon_icon = None
-
-    # The icon for resetting scores
-    reset_icon = None
-    # The confirmation icon
-    confirm_icon = None
-    # The exit/cancel icon
-    cancel_icon = None
-
-    # The icons for the standard selection buttons
-    button1_icon = None
-    button2_icon = None
-    button3_icon = None
-    button_reset_icon = None
-
-    # Labels and their buttons appear in two rows with labels on top and the
-    # corresponding button below it. Usually, the label is an icon. In some
-    # screens it will be a number.
-
-    # Label for the 1st option
-    label1 = None
-    # Label for the 2nd option
-    label2 = None
-    # Label for the 3rd option
-    label3 = None
-    # The icon/button showing which button to press for the 1st option
-    button1 = None
-    # The icon/button showing which button to press for the 2nd option
-    button2 = None
-    # The icon/button showing which button to press for the 3rd option
-    button3 = None
-    # The icon/button showing which buttons to press to reset scores
-    button_reset = None
-
-    # Queue's for communicating with other threads
-    command_queue = Queue()
-    event_queue = None
-
-    button = None
-    hi_there = None
-    did_exit = False
+class Gui(queue_common.QueueCommon):
 
     def __init__(self, master):
+        self.master_ = None
+        self.fullscreen_ = True
+        self.screen_on_process_ = None
+
+        # A 1x1 pixel image for buttons displaying text. This allows their size to
+        # be specified in pixels, since text only button sizes are in characters.
+        self.pixel_icon = None
+
+        # The icon for the pattern matching game
+        self.match_icon = None
+        # The icon for the Rubik solving game
+        self.timer_icon = None
+        # The icon for the Simon Says game
+        self.simon_icon = None
+
+        # The icon for resetting scores
+        self.reset_icon = None
+        # The confirmation icon
+        self.confirm_icon = None
+        # The exit/cancel icon
+        self.cancel_icon = None
+
+        # The icons for the standard selection buttons
+        self.button1_icon = None
+        self.button2_icon = None
+        self.button3_icon = None
+        self.button_reset_icon = None
+
+        # Labels and their buttons appear in two rows with labels on top and the
+        # corresponding button below it. Usually, the label is an icon. In some
+        # screens it will be a number.
+
+        # Label for the 1st option
+        self.label1 = None
+        # Label for the 2nd option
+        self.label2 = None
+        # Label for the 3rd option
+        self.label3 = None
+        # The icon/button showing which button to press for the 1st option
+        self.button1 = None
+        # The icon/button showing which button to press for the 2nd option
+        self.button2 = None
+        # The icon/button showing which button to press for the 3rd option
+        self.button3 = None
+        # The icon/button showing which buttons to press to reset scores
+        self.button_reset = None
+
+        self.button = None
+        self.hi_there = None
+        self.did_exit = False
+
         self.master_ = master
         self.frame = Frame(master)
         self.frame.columnconfigure(0, weight=1)
@@ -114,18 +105,17 @@ class Gui():
         self.master_.after(60000, self.exit)
         self.master_.after(100, self.poll_queue)
         self.master_.after(1000, self.turn_screen_on)
+        queue_common.QueueCommon.__init__(self)
 
     def poll_queue(self):
-        try:
-            command = self.command_queue.get(False)
-            if command.ui_state == UI_QUIT:
-                self.exit()
-            else:
-                self.set_ui_state(command.ui_state, data=command.data)
-            self.command_queue.task_done()
-        except Empty:
-            pass
+        self.check_queue()
         self.master_.after(100, self.poll_queue)
+
+    def handle_command(self, command):
+        if command.command == UI_QUIT:
+            self.exit()
+        else:
+            self.set_ui_state(command.command, data=command.data)
 
     def turn_screen_on(self):
         # Force the screen to turn on
@@ -193,9 +183,6 @@ class Gui():
         self.fullscreen_ = False
         self.master_.attributes("-fullscreen", self.fullscreen_)
 
-    def set_event_queue(self, queue):
-        self.event_queue = queue
-
     def set_ui_state(self, ui_state, data=""):
         if ui_state == UI_HOME:
             self.label1.config(image=self.timer_icon)
@@ -239,39 +226,20 @@ class Gui():
 
     def on_press_1(self):
         print("Button1 pressed")
-        if self.event_queue is not None:
-            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON1)
-            self.event_queue.put(event)
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON1)
+        self.send_event(event)
 
     def on_press_2(self):
         print("Button2 pressed")
-        if self.event_queue is not None:
-            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
-            self.event_queue.put(event)
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
+        self.send_event(event)
 
     def on_press_3(self):
         print("Button3 pressed")
-        if self.event_queue is not None:
-            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
-            self.event_queue.put(event)
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
+        self.send_event(event)
 
     def on_press_reset(self):
         print("Reset pressed")
-        if self.event_queue is not None:
-            event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON_RESET)
-            self.event_queue.put(event)
-
-    def get_queue(self):
-        return self.command_queue
-
-    @staticmethod
-    def say_hi():
-        print("hi there, everyone!")
-
-        # root = Tk()
-        #
-        # app = Gui(root)
-        #
-        # root.mainloop()
-        # root.destroy()
-
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON_RESET)
+        self.send_event(event)

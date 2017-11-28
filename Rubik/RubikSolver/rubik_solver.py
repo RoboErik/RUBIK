@@ -6,6 +6,7 @@ import math
 from . import switch_timer
 from .. import utils
 from .. import pins
+from .. import queue_common
 
 # For reading the color sensors
 from color_sensors import ColorSensors
@@ -14,10 +15,19 @@ from sensor_targets import *
 
 from .rpi_ws281x.python.neopixel import *
 
+Command = queue_common.Command
+
+COMMAND_SET_MODE = 1
+
+MODE_QUIT = -1
+# In this mode don't do anything
+MODE_IDLE = 0
 # In this mode just records the time between lifting and replacing the Cube.
-MODE_TIME = 0
+MODE_TIME = 1
 # In this mode generates a pattern and checks for that pattern on down.
-MODE_PATTERN = 1
+MODE_PATTERN = 2
+# In this mode use the test interface
+MODE_TEST = 3
 
 CLEAR_INDEX = 0
 RED_INDEX = 1
@@ -42,21 +52,30 @@ LED_SENSOR_BRIGHTNESS = 15
 # All the target arrays in one big array
 COLOR_TARGETS = COLOR_TARGETS_15
 
+
 # Does not solve a Rubik cube, but either times how long it took to solve or
 # requires a specific pattern be created.
-class RubikSolver(threading.Thread):
-    _state = 0
-    _mode = MODE_TIME
-    _pattern = []
-    _result = []
+class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
-    _timer = switch_timer.SwitchTimer()
-    _stop_event = threading.Event()
-    color_sensors = None
-    led_strip = None
+    def __init__(self):
+        self. _state = 0
+        self._mode = MODE_TEST  # TODO Change to idle
+        self._pattern = []
+        self._result = []
+
+        self._timer = switch_timer.SwitchTimer()
+        self._stop_event = threading.Event()
+        self._color_sensors = None
+        self._led_strip = None
+        threading.Thread.__init__(self)
+        queue_common.QueueCommon.__init__(self)
 
     def set_mode(self, mode):
-        _mode = mode
+        self._mode = mode
+
+    def handle_command(self, command):
+        if command.command == COMMAND_SET_MODE:
+            self._mode = command.data
 
     def generate_pattern(self):
         self._pattern = []
@@ -64,29 +83,33 @@ class RubikSolver(threading.Thread):
             self._pattern.append(LED_CODES[random.randint(0, 5)])
 
     def show_pattern(self):
-        self.led_strip.set_brightness(LED_PATTERN_BRIGHTNESS)
+        self._led_strip.set_brightness(LED_PATTERN_BRIGHTNESS)
         for i in range(len(self._pattern)):
-            self.led_strip.set_led(i, LED_COLORS[LED_CODES.index(self._pattern[i])])
+            self._led_strip.set_led(i, LED_COLORS[LED_CODES.index(self._pattern[i])])
         return
 
     def hide_pattern(self):
-        self.led_strip.set_brightness(0)
-        self.led_strip.set_all_leds(0)
+        self._led_strip.set_brightness(0)
+        self._led_strip.set_all_leds(0)
         return
 
     def read_colors(self):
-        self.led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
-        self.led_strip.set_all_leds(LED_SENSOR_COLOR)
+        self._led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
+        self._led_strip.set_all_leds(LED_SENSOR_COLOR)
         time.sleep(0.1)
         results = []
         for i in range(9):
-            results.append(guess_color(i, self._read_color(i)))
+            guess_index = guess_color(i, self._read_color(i))
+            if guess_index >= 0:
+                results.append(LED_CODES[guess_index])
+            else:
+                results.append('F')
         # self.hide_pattern()
         return results
 
     def _read_color(self, index):
-        self.color_sensors.set_sensor(index)
-        colors = self.color_sensors.getColors()
+        self._color_sensors.set_sensor(index)
+        colors = self._color_sensors.getColors()
         return colors
 
     def _switch_callback(self, channel):
@@ -101,21 +124,22 @@ class RubikSolver(threading.Thread):
         print("Setup of RubikSolver")
         GPIO.add_event_detect(pins.RUBIK_CUBE_SWITCH, GPIO.BOTH, callback=self._switch_callback,
                               bouncetime=300)
-        self.color_sensors = ColorSensors()
-        self.led_strip = LedStrip()
+        self._color_sensors = ColorSensors()
+        self._led_strip = LedStrip()
 
     def _teardown(self):
         print("Teardown of RubikSolver")
         GPIO.remove_event_detect(pins.RUBIK_CUBE_SWITCH)
 
-        self.color_sensors.clear_active()
+        self._color_sensors.clear_active()
         self.hide_pattern()
 
         # Is this cleanup necessary?
-        del self.led_strip
-        self.led_strip = None
-        del self.color_sensors
-        self.color_sensors = None
+        del self._led_strip
+        self._led_strip = None
+        del self._color_sensors
+        self._color_sensors = None
+
 
     def stop(self):
         print("Stopping RubikSolver! Time is " + str(utils.curr_time_s()))
@@ -124,17 +148,22 @@ class RubikSolver(threading.Thread):
     def run(self):
         self._setup()
 
-        print("test (p)attern, (g)uessing, or (c)ollect data?")
-        value = utils.getChar()
-        if value == 'p':
-            self.test_pattern_display()
-        elif value == 'c':
-            csv = open("csv_colors.txt", 'w')
-            self.collect_color_data(csv)
-            csv.close()
-        elif value == 'g':
-            self.test_guessing()
+        while self._mode != MODE_QUIT:
+            if self._mode == MODE_TEST:
+                print("test (p)attern, (g)uessing, or (c)ollect data?")
+                value = utils.getChar()
+                if value == 'p':
+                    self.test_pattern_display()
+                elif value == 'c':
+                    csv = open("csv_colors.txt", 'w')
+                    self.collect_color_data(csv)
+                    csv.close()
+                elif value == 'g':
+                    self.test_guessing()
+            elif self._mode == MODE_IDLE:
+                time.sleep(0.1)
 
+        self.check_queue()
         self._teardown()
 
     def test_pattern_display(self):
@@ -159,10 +188,10 @@ class RubikSolver(threading.Thread):
         print("Ready to collect color data. Press r to retry or any other key to continue.")
         value = 'r'
         while value == 'r':
-            self.led_strip.set_brightness(0)
+            self._led_strip.set_brightness(0)
             time.sleep(.2)
-            self.led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
-            self.led_strip.set_all_leds(LED_SENSOR_COLOR)
+            self._led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
+            self._led_strip.set_all_leds(LED_SENSOR_COLOR)
             value = utils.getChar()
 
         sums = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -176,7 +205,7 @@ class RubikSolver(threading.Thread):
                 print("\nSAMPLE " + str(i / 9) + ":\n")
                 if incr_brightness:
                     brightness += 10
-                    self.led_strip.set_brightness(brightness)
+                    self._led_strip.set_brightness(brightness)
             # self.color_sensors.set_sensor(sensor)
             # colors = self.color_sensors.getColors()
             colors = self._read_color(sensor)
@@ -219,7 +248,7 @@ def get_color_ratio_string(colors):
 
 def guess_color(sensor, colors):
     if colors[GREEN_INDEX] < 1 or colors[BLUE_INDEX] < 1:
-        return "TOO DARK"
+        return -1  # Too dark
 
     red_green_ratio = colors[RED_INDEX] / float(colors[GREEN_INDEX])
     red_blue_ratio = colors[RED_INDEX] / float(colors[BLUE_INDEX])

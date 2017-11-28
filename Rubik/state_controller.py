@@ -6,7 +6,10 @@ from RubikGui import main_gui as Gui
 from RubikSolver import rubik_solver as Rubik
 from SimonSays import simon_says as Simon
 from . import utils
+from . import queue_common
 from event import *
+
+Command = queue_common.Command
 
 STATE_EXIT = -1
 STATE_HOME = 00
@@ -150,23 +153,23 @@ def ms_to_time_string(ms):
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
 class StateController (threading.Thread):
 
-    _in_game = False
-    _scores = None
-    _temp_scores = None
-    _state = STATE_HOME
-    _ui_state = Gui.UI_HOME
-    _needs_update = False
-
-    _gui = None
-    _gui_queue = None
-    _solver = None
-    _solver_queue = None
-    _simon = None
-    _simon_queue = None
-
-    _event_queue = Queue()
-
     def __init__(self, gui, solver, simon):
+        self._in_game = False
+        self._scores = None
+        self._temp_scores = None
+        self._state = STATE_HOME
+        self._ui_state = Gui.UI_HOME
+        self._needs_update = False
+
+        self._gui = None
+        self._gui_queue = None
+        self._solver = None
+        self._solver_queue = None
+        self._simon = None
+        self._simon_queue = None
+
+        self._event_queue = Queue()
+
         self._gui = gui
         self._gui_queue = gui.get_queue()
         gui.set_event_queue(self._event_queue)
@@ -180,7 +183,7 @@ class StateController (threading.Thread):
 
         self._gui.set_ui_state(Gui.UI_HOME)
         self.load_scores()
-        super(StateController, self).__init__()
+        threading.Thread.__init__(self)
 
     def load_scores(self):
         try:
@@ -243,10 +246,10 @@ class StateController (threading.Thread):
         print("Transitioning from " + get_state_string(from_state)
               + " to " + get_state_string(to_state))
         if to_state == STATE_SIMON_PLAYING:
-            self._simon_queue.put(Simon.Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_PLAYING))
+            self._simon_queue.put(Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_PLAYING))
             self._in_game = True
         elif from_state == STATE_SIMON_PLAYING:
-            self._simon_queue.put(Simon.Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_LISTENING))
+            self._simon_queue.put(Command(Simon.COMMAND_CHANGE_MODE, Simon.MODE_LISTENING))
             self._in_game = False
         self._state = to_state
         self._needs_update = True
@@ -255,13 +258,13 @@ class StateController (threading.Thread):
         print("Running state controller!")
         while True:
             if self._state == STATE_EXIT:
-                self._gui_queue.put(Gui.UiCommand(Gui.UI_QUIT))
-                self._simon_queue.put(Simon.Command(Simon.COMMAND_QUIT))
+                self._gui_queue.put(Command(Gui.UI_QUIT))
+                self._simon_queue.put(Command(Simon.COMMAND_QUIT))
                 break
             if self._needs_update:
                 next_ui = self.get_ui_for_state()
                 if next_ui != self._ui_state:
-                    command = Gui.UiCommand(next_ui, self.get_score_string_for_ui(next_ui))
+                    command = Command(next_ui, self.get_score_string_for_ui(next_ui))
                     self._gui_queue.put(command)
                     self._ui_state = next_ui
                     print("Updated UI to " + str(next_ui))

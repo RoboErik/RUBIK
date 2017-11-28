@@ -1,5 +1,6 @@
 import threading
 
+
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
 class GearRatio (threading.Thread):
     PIN1 = 5
@@ -13,8 +14,10 @@ class GearRatio (threading.Thread):
 
     RESULT_SOUNDS = [] #TODO add filenames for different result sounds
 
-    _state = STATE_IDLE
-    _result = 0
+    def __init__(self):
+        self._state = self.STATE_IDLE
+        self._result = 0
+        threading.Thread.__init__(self)
 
     def wait_for_first_click(self):
         #TODO wait for PIN1 to change then we'll start the music

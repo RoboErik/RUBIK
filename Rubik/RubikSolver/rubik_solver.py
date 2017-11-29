@@ -7,6 +7,7 @@ from . import switch_timer
 from .. import utils
 from .. import pins
 from .. import queue_common
+from .. import event
 
 # For reading the color sensors
 from color_sensors import ColorSensors
@@ -44,13 +45,23 @@ WHITE = 0xaaaaaa
 LED_COLORS = [RED, GREEN, BLUE, YELLOW, ORANGE, WHITE]
 LED_CODES = ['R', 'G', 'B', 'Y', 'O', 'W']
 TEST_PATTERN = ['W', 'G', 'B', 'Y', 'O', 'R', 'Y', 'O', 'R']
+ALL_RED = ['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R']
 LED_PATTERN_BRIGHTNESS = 20
 
 LED_SENSOR_COLOR = Color(255, 235, 130)
 LED_SENSOR_BRIGHTNESS = 15
 
+PATTERN_DISPLAY_TIME = 5.0  # Time to show the pattern to solve for in seconds.
+TIMEOUT = 30*60  # Timeout for cancelling the game if not won yet in seconds.
+
 # All the target arrays in one big array
 COLOR_TARGETS = COLOR_TARGETS_15
+
+STATE_NOT_RUNNING = 0
+STATE_WAITING_TO_START = 1
+STATE_DISPLAYING_PATTERN = 2
+STATE_WAITING_WRONG_PATTERN = 3
+STATE_TIMING = 4
 
 
 # Does not solve a Rubik cube, but either times how long it took to solve or
@@ -58,11 +69,14 @@ COLOR_TARGETS = COLOR_TARGETS_15
 class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
     def __init__(self):
-        self. _state = 0
-        self._mode = MODE_TEST  # TODO Change to idle
+        self. _state = STATE_NOT_RUNNING
+        self._mode = MODE_IDLE
+        self._source = event.SOURCE_MATCH
         self._pattern = []
         self._result = []
 
+        self._start_time = 0
+        self._pattern_shown_time = 0;
         self._timer = switch_timer.SwitchTimer()
         self._stop_event = threading.Event()
         self._color_sensors = None
@@ -72,9 +86,20 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
     def handle_command(self, command):
         if command.command == COMMAND_SET_MODE:
-            self._mode = command.data
+            new_mode = command.data
+            if new_mode != self._mode:
+                self.hide_pattern()
+                self._state = STATE_NOT_RUNNING
+                self._mode = command.data
+                if self._mode == MODE_TIME:
+                    self._source = event.SOURCE_TIMER
+                else:
+                    self._source = event.SOURCE_MATCH
 
     def generate_pattern(self):
+        if True:
+            self._pattern = ALL_RED
+            return
         self._pattern = []
         for i in range(9):
             self._pattern.append(LED_CODES[random.randint(0, 5)])
@@ -90,6 +115,14 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         self._led_strip.set_all_leds(0)
         return
 
+    def is_pattern_correct(self):
+        color_codes = self.read_colors()
+        print("Checking colors: expected " + str(self._pattern) + ", actual " + str(color_codes))
+        for i in range(len(color_codes)):
+            if color_codes[i] != self._pattern[i]:
+                return False
+        return True
+
     def read_colors(self):
         self._led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
         self._led_strip.set_all_leds(LED_SENSOR_COLOR)
@@ -101,8 +134,71 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                 results.append(LED_CODES[guess_index])
             else:
                 results.append('F')
-        # self.hide_pattern()
+        self.hide_pattern()
+        time.sleep(0.1)
         return results
+
+    def cube_is_down(self):
+        colors = self._read_color(4)
+        if colors[CLEAR_INDEX] <= 5:
+            return True
+        return False
+
+    # While in the pattern matching game that state machine looks like this:
+    # 1. Not running
+    # 2. Waiting for the cube to be picked up
+    # 3. Showing the pattern
+    # 4. Waiting for the cube to be put down again
+    # 5. Checking the pattern, if wrong go back to 3 on pick up.
+    # 6. If correct, send the winning time and go back to idle mode.
+    def update_pattern_state(self):
+        # Timeout protection
+        if self._state != STATE_NOT_RUNNING:
+            if time.time() - self._start_time > TIMEOUT:
+                self._state = STATE_NOT_RUNNING
+                self._mode = MODE_IDLE
+                self.send_event(event.Event(self._source, event.EVENT_FAILURE, 3599.99))
+        if self._state == STATE_NOT_RUNNING:
+            self.generate_pattern()
+            # This isn't the actual start time but is used for the timeout
+            self._start_time = time.time()
+            self._state = STATE_WAITING_TO_START
+            return
+        if self._state == STATE_WAITING_TO_START:
+            if not self.cube_is_down():
+                self.show_pattern()
+                self._start_time = time.time()
+                self._pattern_shown_time = self._start_time
+                self._state = STATE_DISPLAYING_PATTERN
+            return
+        if self._state == STATE_DISPLAYING_PATTERN:
+            self._update_time()
+            if (time.time() - self._pattern_shown_time) > 5:
+                self.hide_pattern()
+                self._state = STATE_TIMING
+            return
+        if self._state == STATE_TIMING:
+            curr_time = self._update_time()
+            if self.cube_is_down():
+                if self.is_pattern_correct():
+                    self._state = STATE_NOT_RUNNING
+                    self._mode = MODE_IDLE
+                    self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
+                else:
+                    self._state = STATE_WAITING_WRONG_PATTERN
+            return
+        if self._state == STATE_WAITING_WRONG_PATTERN:
+            self._update_time()
+            if not self.cube_is_down():
+                self.show_pattern()
+                self._state = STATE_DISPLAYING_PATTERN
+                self._pattern_shown_time = time.time()
+
+    # Sends the current playtime as an event and returns the playtime.
+    def _update_time(self):
+        curr_time = time.time() - self._start_time
+        self.send_event(event.Event(self._source, event.EVENT_UPDATE, curr_time))
+        return curr_time
 
     def _read_color(self, index):
         self._color_sensors.set_sensor(index)
@@ -111,7 +207,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
     def _switch_callback(self, channel):
         if GPIO.input(pins.RUBIK_CUBE_SWITCH):
-            if (self._mode == MODE_PATTERN):
+            if self._mode == MODE_PATTERN:
                 self.show_pattern()
             self._timer.on_switch_up()
         else:
@@ -162,9 +258,11 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
             elif self._mode == MODE_IDLE:
                 time.sleep(0.1)
             elif self._mode == MODE_PATTERN:
-                time.sleep(0.1)
+                self.update_pattern_state()
+                time.sleep(0.05)
             self.check_queue()
-            self._teardown()
+
+        self._teardown()
 
     def test_pattern_display(self):
         self._pattern = TEST_PATTERN

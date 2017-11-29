@@ -98,6 +98,9 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                         self._mode = MODE_LISTENING
                         break
                     score += 1
+                    self.send_event(event.Event(event.SOURCE_SIMON,
+                                                event.EVENT_UPDATE,
+                                                score))
                     self.check_queue()
             elif self._mode == MODE_LISTENING:
                 # TODO listen for button presses and send them to controller

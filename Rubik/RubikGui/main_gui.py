@@ -25,8 +25,7 @@ UI_TIMER_END = 19
 UI_MATCH_START = 20
 UI_MATCH_HOME = 20
 UI_MATCH_READY = 21
-UI_MATCH_SUCCESS = 22
-UI_MATCH_FAILURE = 23
+UI_MATCH_PLAYING = 22
 UI_MATCH_END = 29
 
 UI_SIMON_START = 30
@@ -102,7 +101,7 @@ class Gui(queue_common.QueueCommon):
         self.configure_fullscreen()
         self.configure_buttons()
         self.frame.pack(fill="both", expand=True)
-        self.master_.after(60000, self.exit)
+        # self.master_.after(60000, self.exit)
         self.master_.after(100, self.poll_queue)
         self.master_.after(1000, self.turn_screen_on)
         queue_common.QueueCommon.__init__(self)
@@ -112,10 +111,11 @@ class Gui(queue_common.QueueCommon):
         self.master_.after(100, self.poll_queue)
 
     def handle_command(self, command):
+        # print("Handling Gui command with state " + str(command.command))
         if command.command == UI_QUIT:
             self.exit()
         else:
-            self.set_ui_state(command.command, data=command.data)
+            self.set_ui_state(command.command, data=command.data, data2=command.data2)
 
     def turn_screen_on(self):
         # Force the screen to turn on
@@ -183,7 +183,7 @@ class Gui(queue_common.QueueCommon):
         self.fullscreen_ = False
         self.master_.attributes("-fullscreen", self.fullscreen_)
 
-    def set_ui_state(self, ui_state, data=""):
+    def set_ui_state(self, ui_state, data="", data2=""):
         if ui_state == UI_HOME:
             self.label1.config(image=self.timer_icon)
             self.label2.config(image=self.match_icon)
@@ -211,6 +211,27 @@ class Gui(queue_common.QueueCommon):
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
             self.button2.config(image=self.pixel_icon, text=data)
+            self.button3.config(image=self.button2_icon)
+        elif ui_state == UI_TIMER_RUNNING or ui_state == UI_TIMER_READY:
+            self.label1.config(image=self.pixel_icon)
+            self.label2.config(image=self.timer_icon)
+            self.label3.config(image=self.cancel_icon)
+            self.button1.config(image=self.pixel_icon)
+            self.button2.config(image=self.pixel_icon, text=data2)
+            self.button3.config(image=self.button2_icon)
+        elif ui_state == UI_MATCH_PLAYING or ui_state == UI_MATCH_READY:
+            self.label1.config(image=self.pixel_icon)
+            self.label2.config(image=self.match_icon)
+            self.label3.config(image=self.cancel_icon)
+            self.button1.config(image=self.pixel_icon)
+            self.button2.config(image=self.pixel_icon, text=data2)
+            self.button3.config(image=self.button2_icon)
+        elif ui_state == UI_SIMON_PLAYING:
+            self.label1.config(image=self.pixel_icon)
+            self.label2.config(image=self.simon_icon)
+            self.label3.config(image=self.cancel_icon)
+            self.button1.config(image=self.pixel_icon)
+            self.button2.config(image=self.pixel_icon, text=data2)
             self.button3.config(image=self.button2_icon)
 
     def exit(self):

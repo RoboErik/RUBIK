@@ -29,7 +29,6 @@ STATE_SIMON_READY = 31
 STATE_SIMON_PLAYING = 32
 
 STATE_RESET = 90
-STATE_RESET_CONFIRMED = 91
 
 STATE_STRINGS = {
     STATE_EXIT: "EXIT",
@@ -43,7 +42,8 @@ STATE_STRINGS = {
     STATE_MATCH_READY: "MATCH READY",
     STATE_MATCH_PLAYING: "MATCH PLAYING",
     STATE_SIMON_HOME: "SIMON HOME",
-    STATE_SIMON_PLAYING: "SIMON PLAYING"
+    STATE_SIMON_PLAYING: "SIMON PLAYING",
+    STATE_RESET: "RESET"
 }
 
 STATE_TO_UI = {
@@ -56,58 +56,61 @@ STATE_TO_UI = {
     STATE_MATCH_READY: Gui.UI_MATCH_READY,
     STATE_MATCH_PLAYING: Gui.UI_MATCH_PLAYING,
     STATE_SIMON_HOME: Gui.UI_SIMON_HOME,
-    STATE_SIMON_PLAYING: Gui.UI_SIMON_PLAYING
+    STATE_SIMON_PLAYING: Gui.UI_SIMON_PLAYING,
+    STATE_RESET: Gui.UI_CONFIRM_RESET
 }
 
 TRANSITION_MAP = {
     STATE_HOME: {
         EVENT_BUTTON1: STATE_TIMER_HOME,
-        EVENT_BUTTON2: STATE_MATCH_HOME,
-        EVENT_BUTTON3: STATE_SIMON_HOME,
+        EVENT_BUTTON3: STATE_MATCH_HOME,
+        EVENT_BUTTON2: STATE_SIMON_HOME,
         EVENT_BUTTON_RESET: STATE_RESET
     },
     STATE_TIMER_HOME: {
         EVENT_BUTTON1: STATE_TIMER_READY,
-        EVENT_BUTTON3: STATE_HOME
+        EVENT_BUTTON2: STATE_HOME
     },
     STATE_TIMER_READY: {
-        EVENT_CUBE_LIFT: STATE_TIMER_PLAYING,
-        EVENT_BUTTON3: STATE_TIMER_HOME
+        EVENT_UPDATE: STATE_TIMER_PLAYING,
+        EVENT_BUTTON2: STATE_TIMER_HOME
     },
     STATE_TIMER_PLAYING: {
-        EVENT_CUBE_SET: STATE_TIMER_CONFIRM,
-        EVENT_BUTTON3: STATE_TIMER_HOME
+        EVENT_SUCCESS: STATE_TIMER_CONFIRM,
+        EVENT_BUTTON2: STATE_TIMER_HOME
     },
     STATE_TIMER_CONFIRM: {
-        EVENT_BUTTON1: STATE_TIMER_UPDATE,
-        EVENT_BUTTON3: STATE_TIMER_HOME
-    },
-    STATE_TIMER_UPDATE: {
-        EVENT_DEFAULT: STATE_TIMER_HOME
+        EVENT_BUTTON1: STATE_TIMER_HOME,
+        EVENT_BUTTON2: STATE_TIMER_HOME
     },
     STATE_MATCH_HOME: {
         EVENT_BUTTON1: STATE_MATCH_READY,
-        EVENT_BUTTON3: STATE_HOME
+        EVENT_BUTTON2: STATE_HOME
     },
     STATE_MATCH_READY: {
         EVENT_UPDATE: STATE_MATCH_PLAYING,
-        EVENT_BUTTON3: STATE_MATCH_HOME
+        EVENT_BUTTON2: STATE_MATCH_HOME
     },
     STATE_MATCH_PLAYING: {
         EVENT_SUCCESS: STATE_MATCH_HOME,
         EVENT_FAILURE: STATE_MATCH_HOME,
-        EVENT_BUTTON3: STATE_MATCH_HOME
+        EVENT_BUTTON2: STATE_MATCH_HOME
     },
     STATE_SIMON_HOME: {
         EVENT_BUTTON1: STATE_SIMON_PLAYING,
-        EVENT_BUTTON3: STATE_HOME
+        EVENT_BUTTON2: STATE_HOME
     },
     STATE_SIMON_PLAYING: {
         EVENT_SUCCESS: STATE_SIMON_PLAYING,
         EVENT_FAILURE: STATE_SIMON_HOME
+    },
+    STATE_RESET: {
+        EVENT_BUTTON2: STATE_HOME,
+        EVENT_BUTTON_RESET: STATE_HOME
     }
 }
 
+RESET_DETECT_WINDOW = 0.5
 
 def get_state_string(state):
     return STATE_STRINGS.get(state, "UNKNOWN STATE")
@@ -115,6 +118,10 @@ def get_state_string(state):
 
 def get_event_string(event):
     return EVENT_STRINGS.get(event, "UNKNOWN EVENT")
+
+
+def get_source_string(source):
+    return SOURCE_STRINGS.get(source, "UNKNOWN SOURCE")
 
 
 def s_to_time_string(secs):
@@ -130,7 +137,9 @@ class StateController (threading.Thread):
         self._in_game = False
         self._state = STATE_HOME
         self._ui_state = Gui.UI_HOME
-        self._needs_update = False
+        self._temp_data = None
+        self._reset_timer = None
+        self._reset_buttons = None
 
         self._event_queue = Queue()
 
@@ -184,8 +193,14 @@ class StateController (threading.Thread):
                 got_event = False
 
     def handle_event(self, event):
-        # print("Handling event " + get_event_string(event.event))
+        if event.event != EVENT_UPDATE:
+            print("Handling event " + get_event_string(event.event)
+                  + " from " + get_source_string(event.source))
         curr_state = self._state
+        next_state = TRANSITION_MAP.get(curr_state).get(event.event, curr_state)
+
+        self.check_for_reset(curr_state, event)
+
         if event.source == SOURCE_SIMON and event.event == EVENT_FAILURE:
             if event.data > self._scores["simon"]:
                 self._scores["simon"] = event.data
@@ -206,10 +221,79 @@ class StateController (threading.Thread):
                 data2 = s_to_time_string(event.data)
                 self._gui_queue.put(Command(Gui.UI_MATCH_PLAYING, data1, data2))
 
-        next_state = TRANSITION_MAP.get(curr_state).get(event.event, curr_state)
+        if event.source == SOURCE_TIMER and event.event == EVENT_SUCCESS:
+            if self._temp_data < self._scores["time"]:
+                self._temp_data = event.data
+            else:
+                # Not a better score, skip confirming
+                print("Worse timer score, skipping confirmation step.")
+                next_state = STATE_TIMER_HOME
+        if event.event == EVENT_BUTTON1 and curr_state == STATE_TIMER_CONFIRM:
+            if self._temp_data < self._scores["time"]:
+                self._scores["time"] = self._temp_data
+                self.save_scores()
+        if event.source == SOURCE_TIMER and event.event == EVENT_UPDATE:
+            if curr_state == STATE_TIMER_PLAYING or curr_state == STATE_TIMER_READY:
+                data1 = s_to_time_string(self._scores["time"])
+                data2 = s_to_time_string(event.data)
+                self._gui_queue.put(Command(Gui.UI_TIMER_RUNNING, data1, data2))
+
         if next_state == curr_state:
             return
         self.transition(curr_state, next_state)
+
+    def check_for_reset(self, curr_state, event):
+        # If buttons 4 and 5 are pressed within .5s of each other trigger the reset screen
+        if curr_state == STATE_HOME:
+            if event.event == EVENT_BUTTON4 or event.event == EVENT_BUTTON5:
+                if self._reset_timer is None:
+                    self._reset_buttons = None
+                elif time.time() - self._reset_timer > RESET_DETECT_WINDOW:
+                    self._reset_buttons = None
+
+                if self._reset_buttons is None or self._reset_buttons[0] == event.event:
+                    self._reset_buttons = [event.event]
+                    self._reset_timer = time.time()
+                else:
+                    self._event_queue.put(Event(SOURCE_OTHER, EVENT_BUTTON_RESET))
+                    self._reset_buttons = None
+                    self._reset_timer = None
+
+        if curr_state == STATE_RESET:
+            if event.event == EVENT_BUTTON3 \
+                    or event.event == EVENT_BUTTON4 \
+                    or event.event == EVENT_BUTTON5:
+                if self._reset_timer is None:
+                    self._reset_buttons = None
+                elif time.time() - self._reset_timer > RESET_DETECT_WINDOW:
+                    self._reset_buttons = None
+
+                if self._reset_buttons is None:
+                    self._reset_buttons = [event.event]
+                    self._reset_timer = time.time()
+                else:
+                    found = False
+                    for i in range(len(self._reset_buttons)):
+                        if self._reset_buttons[i] == event.event:
+                            found = True
+                            break
+                    if not found:
+                        if len(self._reset_buttons) == 2:
+                            # This is the third reset button.
+                            self._event_queue.put(Event(SOURCE_OTHER, EVENT_BUTTON_RESET))
+                            self._reset_buttons = None
+                            self._reset_timer = None
+                        else:
+                            self._reset_buttons.append(event.event)
+
+        if curr_state == STATE_RESET and event.event == EVENT_BUTTON_RESET:
+            self._scores = {
+                "time": 3599.99,  # 59:59.99
+                "match": 3599.99,
+                "simon": 0,
+                "gears": False
+            }
+            self.save_scores()
 
     def transition(self, from_state, to_state):
         if from_state == to_state:
@@ -266,6 +350,9 @@ class StateController (threading.Thread):
                 data1 = str(self._scores["simon"])
             elif next_ui == Gui.UI_SIMON_PLAYING:
                 data1 = "0"
+            elif next_ui == Gui.UI_TIMER_CONFIRM:
+                data1 = s_to_time_string(self._scores["time"])
+                data2 = s_to_time_string(self._temp_data)
 
             command = Command(next_ui, data1, data2)
             self._gui_queue.put(command)

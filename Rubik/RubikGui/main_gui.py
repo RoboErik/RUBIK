@@ -14,6 +14,7 @@ Command = queue_common.Command
 
 UI_QUIT = -1
 UI_HOME = 00
+UI_CONFIRM_RESET = 99
 
 UI_TIMER_START = 10
 UI_TIMER_HOME = 10
@@ -189,50 +190,65 @@ class Gui(queue_common.QueueCommon):
             self.label2.config(image=self.match_icon)
             self.label3.config(image=self.simon_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=self.button2_icon, text="")
-            self.button3.config(image=self.button3_icon)
+            self.button2.config(image=self.button3_icon, text="")
+            self.button3.config(image=self.button2_icon)
         elif ui_state == UI_TIMER_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.timer_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=self.pixel_icon, text=data)
+            self.button2.config(image=self.pixel_icon, text=data, fg="black")
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_MATCH_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.match_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=self.pixel_icon, text=data)
+            self.button2.config(image=self.pixel_icon, text=data, fg="black")
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_SIMON_HOME:
             self.label1.config(image=self.confirm_icon)
             self.label2.config(image=self.simon_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.button1_icon)
-            self.button2.config(image=self.pixel_icon, text=data)
+            self.button2.config(image=self.pixel_icon, text=data, fg="black")
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_TIMER_RUNNING or ui_state == UI_TIMER_READY:
             self.label1.config(image=self.pixel_icon)
             self.label2.config(image=self.timer_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.pixel_icon)
-            self.button2.config(image=self.pixel_icon, text=data2)
+            self.button2.config(image=self.pixel_icon, text=data2, fg="red")
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_MATCH_PLAYING or ui_state == UI_MATCH_READY:
             self.label1.config(image=self.pixel_icon)
             self.label2.config(image=self.match_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.pixel_icon)
-            self.button2.config(image=self.pixel_icon, text=data2)
+            self.button2.config(image=self.pixel_icon, text=data2, fg="red")
             self.button3.config(image=self.button2_icon)
         elif ui_state == UI_SIMON_PLAYING:
             self.label1.config(image=self.pixel_icon)
             self.label2.config(image=self.simon_icon)
             self.label3.config(image=self.cancel_icon)
             self.button1.config(image=self.pixel_icon)
-            self.button2.config(image=self.pixel_icon, text=data2)
+            self.button2.config(image=self.pixel_icon, text=data2, fg="red")
             self.button3.config(image=self.button2_icon)
+        elif ui_state == UI_TIMER_CONFIRM:
+            self.label1.config(image=self.confirm_icon)
+            self.label2.config(image=self.timer_icon)
+            self.label3.config(image=self.cancel_icon)
+            self.button1.config(image=self.button1_icon)
+            self.button2.config(image=self.pixel_icon, text=data2, fg="green")
+            self.button3.config(image=self.button2_icon)
+        elif ui_state == UI_CONFIRM_RESET:
+            self.label1.config(image=self.confirm_icon)
+            self.label2.config(image=self.reset_icon)
+            self.label3.config(image=self.cancel_icon)
+            self.button1.config(image=self.button_reset_icon)
+            self.button2.config(image=self.pixel_icon, text="")
+            self.button3.config(image=self.button2_icon)
+
 
     def exit(self):
         if self.did_exit:

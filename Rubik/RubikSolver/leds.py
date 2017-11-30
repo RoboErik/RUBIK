@@ -3,7 +3,7 @@ import time
 
 from .rpi_ws281x.python.neopixel import *
 
-LOG = True
+LOG = False
 
 class LedStrip:
     # LED strip configuration:

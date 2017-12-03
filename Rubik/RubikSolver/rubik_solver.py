@@ -44,9 +44,14 @@ WHITE = 0xaaaaaa
 
 LED_COLORS = [RED, GREEN, BLUE, YELLOW, ORANGE, WHITE]
 LED_CODES = ['R', 'G', 'B', 'Y', 'O', 'W']
-TEST_PATTERN = ['W', 'G', 'B', 'Y', 'O', 'R', 'Y', 'O', 'R']
+TEST_PATTERN = ['W', 'G', 'B', 'Y', 'O', 'R', 'G', 'B', 'G']
+TEST_PATTERN2 = ['W', 'W', 'W', 'B', 'B', 'G', 'B', 'B', 'B']
 ALL_RED = ['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R']
 LED_PATTERN_BRIGHTNESS = 20
+
+# The LEDs and the color sensors are transposes of each other, so this
+# mapping works both ways.
+DISPLAY_TO_READ_INDEX = [0, 3, 6, 1, 4, 7, 2, 5, 8]
 
 LED_SENSOR_COLOR = Color(255, 235, 130)
 LED_SENSOR_BRIGHTNESS = 15
@@ -57,6 +62,8 @@ TIMER_BLINK_TIME = 0.5
 PATTERN_DISPLAY_TIME = 5.0
 # Timeout for cancelling the game if not won yet in seconds.
 RUNNING_TIMEOUT = 30 * 60
+# The max attempts before the game is lost.
+MAX_ATTEMPTS = 2
 
 # All the target arrays in one big array
 COLOR_TARGETS = COLOR_TARGETS_15
@@ -79,6 +86,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         self._source = event.SOURCE_MATCH
         self._pattern = []
         self._result = []
+        self._attempts = 0
 
         self._start_time = 0
         self._pattern_shown_time = 0;
@@ -108,7 +116,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
     def generate_pattern(self):
         if True:
-            self._pattern = ALL_RED
+            self._pattern = TEST_PATTERN2
             return
         self._pattern = []
         for i in range(9):
@@ -143,7 +151,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         color_codes = self.read_colors()
         print("Checking colors: expected " + str(self._pattern) + ", actual " + str(color_codes))
         for i in range(len(color_codes)):
-            if color_codes[i] != self._pattern[i]:
+            if color_codes[i] != self._pattern[DISPLAY_TO_READ_INDEX[i]]:
                 return False
         return True
 
@@ -232,6 +240,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         self.check_timeout()
         if self._state == STATE_NOT_RUNNING:
             self.generate_pattern()
+            self._attempts = 0
             # This isn't the actual start time but is used for the timeout
             self._start_time = time.time()
             self._state = STATE_WAITING_TO_START
@@ -257,7 +266,13 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                     self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
                     self.set_mode(MODE_IDLE)
                 else:
-                    self._state = STATE_WAITING_WRONG_PATTERN
+                    self._attempts += 1
+                    if self._attempts >= MAX_ATTEMPTS:
+                        self._state = STATE_NOT_RUNNING
+                        self.send_event(event.Event(self._source, event.EVENT_FAILURE, curr_time))
+                        self.set_mode(MODE_IDLE)
+                    else:
+                        self._state = STATE_WAITING_WRONG_PATTERN
             return
         if self._state == STATE_WAITING_WRONG_PATTERN:
             self._update_time()

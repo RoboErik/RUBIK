@@ -26,3 +26,10 @@ chmod +x run_start.sh
 pico /home/pi/.config/lxsession/LXDE-pi/autostart
 # add "@bash /home/pi/pywork/RUBIK/run_start.sh 2>/tmp/rerr.txt" to autostart
 # Be sure to change pywork/RUBIK/ to whatever directory run_start.sh is in
+
+# To set up the splash screen both of these need to be done to show as long as possible
+http://www.raspberry-projects.com/pi/pi-operating-systems/raspbian/custom-boot-up-screen
+https://yingtongli.me/blog/2016/12/21/splash.html
+
+# To auto-hide the cursor
+https://jackbarber.co.uk/blog/2017-02-16-hide-raspberry-pi-mouse-cursor-in-raspbian-kiosk

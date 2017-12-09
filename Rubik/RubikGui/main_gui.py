@@ -36,6 +36,8 @@ UI_SIMON_END = 39
 
 _BUTTON_WIDTH = 200
 _BUTTON_HEIGHT = 200
+_SCREEN_WIDTH = 640
+_SCREEN_HEIGHT = 480
 
 
 class Gui(queue_common.QueueCommon):
@@ -44,6 +46,7 @@ class Gui(queue_common.QueueCommon):
         self.master_ = None
         self.fullscreen_ = True
         self.screen_on_process_ = None
+        self.font = tkFont.Font(size=22)
 
         # A 1x1 pixel image for buttons displaying text. This allows their size to
         # be specified in pixels, since text only button sizes are in characters.
@@ -93,15 +96,16 @@ class Gui(queue_common.QueueCommon):
         self.did_exit = False
 
         self.master_ = master
-        self.frame = Frame(master)
+        self.frame = Frame(master, width=_SCREEN_WIDTH, height=_SCREEN_HEIGHT)
         self.frame.columnconfigure(0, weight=1)
         self.frame.columnconfigure(1, weight=1)
         self.frame.columnconfigure(2, weight=1)
         self.frame.rowconfigure(0, weight=1)
         self.frame.rowconfigure(1, weight=1)
+        self.frame.pack(fill="both", expand=True)
+        self.frame.pack_propagate(0)
         self.configure_fullscreen()
         self.configure_buttons()
-        self.frame.pack(fill="both", expand=True)
         # self.master_.after(60000, self.exit)
         self.master_.after(100, self.poll_queue)
         self.master_.after(1000, self.turn_screen_on)
@@ -137,38 +141,86 @@ class Gui(queue_common.QueueCommon):
         self.button3_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "simon-3.png"))
         self.button_reset_icon = PhotoImage(file=os.path.join("Rubik", "Assets", "simon-reset.png"))
 
-        self.label1 = Label(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        self.label1.grid(row=0, column=0)
-        self.label2 = Label(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        self.label2.grid(row=0, column=1)
-        self.label3 = Label(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        self.label3.grid(row=0, column=2)
+        self.create_labels()
+        self.create_buttons2()
 
+        self.set_ui_state(UI_HOME)
+
+    def create_labels(self):
+        # Python is the worst. To keep the button from resizing with text it
+        # needs to be in a frame with pack_propagate(0). =p
+        # The row and column are reversed because the screen is upside down.
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=1, column=2)
+        frame.pack_propagate(0)
+        self.label1 = Label(frame, width=_BUTTON_WIDTH-10, height=_BUTTON_HEIGHT, font=self.font)
+        self.label1.bind('<Button-1>', self.on_press_1)
+        self.label1.pack()
+
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=1, column=1)
+        frame.pack_propagate(0)
+        self.label2 = Label(frame, width=_BUTTON_WIDTH-20, height=_BUTTON_HEIGHT, font=self.font)
+        self.label2.bind('<Button-1>', self.on_press_2)
+        self.label2.pack()
+
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=1, column=0)
+        frame.pack_propagate(0)
+        self.label3 = Label(frame, width=_BUTTON_WIDTH+20, height=_BUTTON_HEIGHT, font=self.font)
+        self.label3.bind('<Button-1>', self.on_press_3)
+        self.label3.pack()
+
+    # Creates a set of labels which can be used as buttons.
+    def create_buttons2(self):
+        # Python is the worst. To keep the button from resizing with text it
+        # needs to be in a frame with pack_propagate(0). =p
+        # The row and column are reversed because the screen is upside down.
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=0, column=2)
+        frame.pack_propagate(0)
+        self.button1 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button1.bind('<Button-1>', self.on_press_1)
+        self.button1.pack()
+
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=0, column=1)
+        frame.pack_propagate(0)
+        self.button2 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button2.bind('<Button-1>', self.on_press_2)
+        self.button2.pack()
+
+        frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
+        frame.grid(row=0, column=0)
+        frame.pack_propagate(0)
+        self.button3 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button3.bind('<Button-1>', self.on_press_3)
+        self.button3.pack()
+
+    # Creates a set of actual buttons and positions them.
+    def create_buttons(self):
         self.button1 = Button(
             self.frame, image=self.button1_icon, command=self.on_press_1,
-            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
+            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, borderwidth=0
         )
-        self.button1.grid(row=1, column=0)
-
+        self.button1.grid(row=0, column=2)
         # Python is the worst. To keep the button from resizing with text it
         # needs to be in a frame with pack_propagate(0). =p
         button2_frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        button2_frame.grid(row=1, column=1)
+        button2_frame.grid(row=0, column=1)
         button2_frame.pack_propagate(0)
         time_font = tkFont.Font(size=22)
         self.button2 = Button(
             button2_frame, image=self.button2_icon, compound="center",
             font=time_font, command=self.on_press_2,
-            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
+            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, borderwidth=0
         )
         self.button2.pack(expand=False, fill=None)
         self.button3 = Button(
             self.frame, image=self.button3_icon, command=self.on_press_3,
-            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT
+            width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, borderwidth=0
         )
-        self.button3.grid(row=1, column=2)
-
-        self.set_ui_state(UI_HOME)
+        self.button3.grid(row=0, column=0)
 
     def configure_fullscreen(self):
         self.fullscreen_ = True
@@ -261,22 +313,22 @@ class Gui(queue_common.QueueCommon):
         screen_off.kill()
         self.did_exit = True
 
-    def on_press_1(self):
+    def on_press_1(self, e):
         print("Button1 pressed")
         event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON1)
         self.send_event(event)
 
-    def on_press_2(self):
+    def on_press_2(self, e):
         print("Button2 pressed")
         event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
         self.send_event(event)
 
-    def on_press_3(self):
+    def on_press_3(self, e):
         print("Button3 pressed")
         event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
         self.send_event(event)
 
-    def on_press_reset(self):
+    def on_press_reset(self, e):
         print("Reset pressed")
         event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON_RESET)
         self.send_event(event)

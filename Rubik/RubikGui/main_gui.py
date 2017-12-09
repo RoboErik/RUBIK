@@ -149,25 +149,27 @@ class Gui(queue_common.QueueCommon):
     def create_labels(self):
         # Python is the worst. To keep the button from resizing with text it
         # needs to be in a frame with pack_propagate(0). =p
-        # The row and column are reversed because the screen is upside down.
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=1, column=2)
+        frame.grid(row=0, column=0)
         frame.pack_propagate(0)
-        self.label1 = Label(frame, width=_BUTTON_WIDTH-10, height=_BUTTON_HEIGHT, font=self.font)
+        self.label1 = Label(frame, width=_BUTTON_WIDTH-10, height=_BUTTON_HEIGHT,
+                            compound="center", font=self.font)
         self.label1.bind('<Button-1>', self.on_press_1)
         self.label1.pack()
 
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=1, column=1)
+        frame.grid(row=0, column=1)
         frame.pack_propagate(0)
-        self.label2 = Label(frame, width=_BUTTON_WIDTH-20, height=_BUTTON_HEIGHT, font=self.font)
+        self.label2 = Label(frame, width=_BUTTON_WIDTH-20, height=_BUTTON_HEIGHT,
+                            compound="center", font=self.font)
         self.label2.bind('<Button-1>', self.on_press_2)
         self.label2.pack()
 
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=1, column=0)
+        frame.grid(row=0, column=2)
         frame.pack_propagate(0)
-        self.label3 = Label(frame, width=_BUTTON_WIDTH+20, height=_BUTTON_HEIGHT, font=self.font)
+        self.label3 = Label(frame, width=_BUTTON_WIDTH+20, height=_BUTTON_HEIGHT,
+                            compound="center", font=self.font)
         self.label3.bind('<Button-1>', self.on_press_3)
         self.label3.pack()
 
@@ -177,23 +179,26 @@ class Gui(queue_common.QueueCommon):
         # needs to be in a frame with pack_propagate(0). =p
         # The row and column are reversed because the screen is upside down.
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=0, column=2)
+        frame.grid(row=1, column=0)
         frame.pack_propagate(0)
-        self.button1 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button1 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT,
+                             compound="center", font=self.font)
         self.button1.bind('<Button-1>', self.on_press_1)
         self.button1.pack()
 
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=0, column=1)
+        frame.grid(row=1, column=1)
         frame.pack_propagate(0)
-        self.button2 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button2 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT,
+                             compound="center", font=self.font)
         self.button2.bind('<Button-1>', self.on_press_2)
         self.button2.pack()
 
         frame = Frame(self.frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT)
-        frame.grid(row=0, column=0)
+        frame.grid(row=1, column=2)
         frame.pack_propagate(0)
-        self.button3 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT, font=self.font)
+        self.button3 = Label(frame, width=_BUTTON_WIDTH, height=_BUTTON_HEIGHT,
+                             compound="center", font=self.font)
         self.button3.bind('<Button-1>', self.on_press_3)
         self.button3.pack()
 

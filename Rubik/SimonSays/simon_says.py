@@ -22,10 +22,14 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     BUTTON_LETTER = ["R", "B", "G", "Y"]
     LIT_TIME = .7
     OFF_TIME = .25
+    SPEED_SCALE = 0.98
+    MIN_SPEED = 0.4
+    TIMEOUT = 2.5
 
     def __init__(self):
         self._mode = MODE_LISTENING
         self._score = 0
+        self._curr_speed = 1
         threading.Thread.__init__(self)
         queue_common.QueueCommon.__init__(self)
 
@@ -36,7 +40,8 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         print("b1 pressed")
 
     def wait_for_press(self):
-        value = utils.getChar()  # getChar()
+        # TODO wait for correct button or timeout
+        value = utils.getChar()
         return value
 
     def show_value(self, value):
@@ -57,16 +62,21 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     def play_sequence(self, seq):
         print("Watch close")
         for val in seq:
-            time.sleep(self.OFF_TIME)
+            time.sleep(self.OFF_TIME * self._curr_speed)
             colorStr = self.BUTTONS[val]
             self.show_value(colorStr)
-            time.sleep(self.LIT_TIME)
+            time.sleep(self.LIT_TIME * self._curr_speed)
             self.turn_off(colorStr)
         print("\nNow repeat")
 
     def read_sequence(self, seq):
         for index in seq:
+            wait_start = time.time()
             val = self.wait_for_press()
+            delay = time.time() - wait_start
+            if delay > self.TIMEOUT * self._curr_speed:
+                print("Too slow!")
+                return False
             if val.upper() != self.BUTTON_LETTER[index]:
                 print("You lose!")
                 return False
@@ -88,6 +98,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                 print("Starting Simon Says!")
                 sequence = []
                 score = 0
+                self._curr_speed = 1.0
                 while self._mode == MODE_PLAYING:
                     self.add_random(sequence)
                     self.play_sequence(sequence)
@@ -98,6 +109,10 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                         self._mode = MODE_LISTENING
                         break
                     score += 1
+                    self._curr_speed *= self.SPEED_SCALE
+                    if self._curr_speed < self.MIN_SPEED:
+                        self._curr_speed = self.MIN_SPEED
+
                     self.send_event(event.Event(event.SOURCE_SIMON,
                                                 event.EVENT_UPDATE,
                                                 score))

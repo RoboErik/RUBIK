@@ -33,3 +33,6 @@ https://yingtongli.me/blog/2016/12/21/splash.html
 
 # To auto-hide the cursor
 https://jackbarber.co.uk/blog/2017-02-16-hide-raspberry-pi-mouse-cursor-in-raspbian-kiosk
+
+# To flip screen add the following to /boot/config.txt. See https://www.raspberrypi.org/forums/viewtopic.php?t=120793
+display_rotate=2

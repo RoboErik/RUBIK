@@ -8,6 +8,7 @@ from SimonSays import simon_says as Simon
 from . import utils
 from . import queue_common
 from event import *
+import sounds
 
 Command = queue_common.Command
 
@@ -361,6 +362,7 @@ class StateController (threading.Thread):
 
     def run(self):
         print("Running state controller!")
+        sounds.play_bloop()
         while True:
             if self._state == STATE_EXIT:
                 self._gui_queue.put(Command(Gui.UI_QUIT))
@@ -376,8 +378,7 @@ class StateController (threading.Thread):
                 else:
                     event = ord(key) - ord('0')
                     self._event_queue.put(Event(SOURCE_OTHER, event))
+                    sounds.play_bloop()
 
             self.check_queue()
-
-        return
-
+        sounds.cleanup()

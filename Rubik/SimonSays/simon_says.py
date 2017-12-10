@@ -18,9 +18,21 @@ COMMAND_CHANGE_MODE = 0
 
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
 class SimonSays(threading.Thread, queue_common.QueueCommon):
-    BUTTONS = ["(R)ed", "(B)lue", "(G)reen", "(Y)ellow"]
-    BUTTON_LETTER = ["R", "B", "G", "Y"]
-    LIT_TIME = .7
+    BUTTONS = ["(R)ed", "(B)lue", "(G)reen", "(Y)ellow", "(W)hite"]
+    BUTTON_LETTER = ["R", "B", "G", "Y", "W"]
+    BUTTON_EVENTS = [event.EVENT_BUTTON4,  # R
+                     event.EVENT_BUTTON5,  # B
+                     event.EVENT_BUTTON2,  # G
+                     event.EVENT_BUTTON1,  # Y
+                     event.EVENT_BUTTON3]  # W
+    BUTTON_LETTER_TO_EVENT = {
+        "Y": event.EVENT_BUTTON1,
+        "G": event.EVENT_BUTTON2,
+        "W": event.EVENT_BUTTON3,
+        "R": event.EVENT_BUTTON4,
+        "B": event.EVENT_BUTTON5,
+    }
+    LIT_TIME = .75
     OFF_TIME = .25
     SPEED_SCALE = 0.98
     MIN_SPEED = 0.4
@@ -65,6 +77,10 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
             time.sleep(self.OFF_TIME * self._curr_speed)
             colorStr = self.BUTTONS[val]
             self.show_value(colorStr)
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_PLAY_SOUND,
+                                        self.BUTTON_EVENTS[val],
+                                        self._curr_speed))
             time.sleep(self.LIT_TIME * self._curr_speed)
             self.turn_off(colorStr)
         print("\nNow repeat")
@@ -80,6 +96,9 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
             if val.upper() != self.BUTTON_LETTER[index]:
                 print("You lose!")
                 return False
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_PLAY_SOUND,
+                                        self.BUTTON_LETTER_TO_EVENT[val.upper()]))
         print("\nWell done")
         return True
 
@@ -102,6 +121,10 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                 while self._mode == MODE_PLAYING:
                     self.add_random(sequence)
                     self.play_sequence(sequence)
+                    self.send_event(event.Event(event.SOURCE_SIMON,
+                                                event.EVENT_UPDATE,
+                                                score,
+                                                self._curr_speed))
                     if not self.read_sequence(sequence):
                         self.send_event(event.Event(event.SOURCE_SIMON,
                                                     event.EVENT_FAILURE,
@@ -117,6 +140,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                                                 event.EVENT_UPDATE,
                                                 score))
                     self.check_queue()
+                    time.sleep(1)
             elif self._mode == MODE_LISTENING:
                 # TODO listen for button presses and send them to controller
                 self.check_queue()

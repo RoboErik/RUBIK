@@ -161,6 +161,9 @@ class StateController (threading.Thread):
         self._gui.set_ui_state(Gui.UI_HOME)
         self._scores = None
         self.load_scores()
+
+        self._sounds = sounds.Sounds()
+
         threading.Thread.__init__(self)
 
     def load_scores(self):
@@ -203,6 +206,7 @@ class StateController (threading.Thread):
         self.check_for_reset(curr_state, event)
 
         if event.source == SOURCE_SIMON and event.event == EVENT_FAILURE:
+            self._sounds.play_sound(sounds.BUZZ)
             if event.data > self._scores["simon"]:
                 self._scores["simon"] = event.data
                 self.save_scores()
@@ -211,6 +215,11 @@ class StateController (threading.Thread):
                 data1 = str(self._scores["simon"])
                 data2 = str(event.data)
                 self._gui_queue.put(Command(Gui.UI_SIMON_PLAYING, data1, data2))
+        if event.source == SOURCE_SIMON and event.event == EVENT_PLAY_SOUND:
+            duration = 1500
+            if event.data2 is not None:
+                duration = int(event.data2 * 1000)
+            self._sounds.play_button(event.data, duration)
 
         if event.source == SOURCE_MATCH and event.event == EVENT_SUCCESS:
             if event.data < self._scores["match"]:
@@ -362,7 +371,8 @@ class StateController (threading.Thread):
 
     def run(self):
         print("Running state controller!")
-        sounds.play_bloop()
+        self._sounds.prepare()
+        self._sounds.play_sound(sounds.BLOOP)
         while True:
             if self._state == STATE_EXIT:
                 self._gui_queue.put(Command(Gui.UI_QUIT))
@@ -378,7 +388,7 @@ class StateController (threading.Thread):
                 else:
                     event = ord(key) - ord('0')
                     self._event_queue.put(Event(SOURCE_OTHER, event))
-                    sounds.play_bloop()
+                    self._sounds.play_sound(sounds.BLOOP)
 
             self.check_queue()
-        sounds.cleanup()
+        self._sounds.cleanup()

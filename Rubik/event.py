@@ -1,8 +1,9 @@
 class Event:
-    def __init__(self, source, event, data=None):
+    def __init__(self, source, event, data=None, data2=None):
         self.source = source
         self.event = event
         self.data = data
+        self.data2 = data2
 
 
 SOURCE_OTHER = 0
@@ -30,7 +31,12 @@ EVENT_BUTTON5 = 5
 EVENT_SUCCESS = 6
 EVENT_FAILURE = 7
 EVENT_UPDATE = 8
+EVENT_PLAY_SOUND = 9
 EVENT_BUTTON_RESET = -1
+
+BUTTON_EVENTS = [EVENT_BUTTON1, EVENT_BUTTON2, EVENT_BUTTON3, EVENT_BUTTON4, EVENT_BUTTON5]
+BUTTON_ON = 1
+BUTTON_OFF = 0
 
 EVENT_STRINGS = {
     EVENT_DEFAULT: "DEFAULT",
@@ -42,5 +48,6 @@ EVENT_STRINGS = {
     EVENT_SUCCESS: "SUCCESS",
     EVENT_FAILURE: "FAILURE",
     EVENT_UPDATE: "UPDATE",
+    EVENT_PLAY_SOUND: "SOUND",
     EVENT_BUTTON_RESET: "RESET"
 }

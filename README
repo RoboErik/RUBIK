@@ -45,3 +45,8 @@ hdmi_drive=2
 # And adding it to modules
 sudo pico /etc/modules
 # Add snd-bcm2835 and save
+
+#Sound sources:
+2ab, 2e, 3ab, 3e, 4c, 4e from https://freesound.org/people/j_e_f_f_g/packs/20150/
+watch-tick from https://freesound.org/people/DrMinky/sounds/174721/
+bloop, buzzer, chime from http://www.wavsource.com/

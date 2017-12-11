@@ -222,6 +222,7 @@ class StateController (threading.Thread):
             self._sounds.play_button(event.data, duration)
 
         if event.source == SOURCE_MATCH and event.event == EVENT_SUCCESS:
+            self._sounds.play_sound(sounds.CHIME)
             if event.data < self._scores["match"]:
                 self._scores["match"] = event.data
                 self.save_scores()
@@ -232,6 +233,7 @@ class StateController (threading.Thread):
                 self._gui_queue.put(Command(Gui.UI_MATCH_PLAYING, data1, data2))
 
         if event.source == SOURCE_TIMER and event.event == EVENT_SUCCESS:
+            self._sounds.play_sound(sounds.CHIME)
             if self._temp_data < self._scores["time"]:
                 self._temp_data = event.data
             else:
@@ -304,6 +306,7 @@ class StateController (threading.Thread):
                 "gears": False
             }
             self.save_scores()
+            self._sounds.play_sound(sounds.COUNTDOWN)
 
     def transition(self, from_state, to_state):
         if from_state == to_state:
@@ -316,16 +319,20 @@ class StateController (threading.Thread):
         if from_state == STATE_TIMER_READY:
             if to_state != STATE_TIMER_PLAYING:
                 self._solver_queue.put(Command(Solver.COMMAND_SET_MODE, Solver.MODE_IDLE))
+                self._sounds.stop_sound(sounds.TICK)
                 self._in_game = False
         if from_state == STATE_TIMER_PLAYING:
             self._solver_queue.put(Command(Solver.COMMAND_SET_MODE, Solver.MODE_IDLE))
+            self._sounds.stop_sound(sounds.TICK)
             self._in_game = False
         if from_state == STATE_MATCH_READY:
             if to_state != STATE_MATCH_PLAYING:
                 self._solver_queue.put(Command(Solver.COMMAND_SET_MODE, Solver.MODE_IDLE))
+                self._sounds.stop_sound(sounds.TICK)
                 self._in_game = False
         if from_state == STATE_MATCH_PLAYING:
             self._solver_queue.put(Command(Solver.COMMAND_SET_MODE, Solver.MODE_IDLE))
+            self._sounds.stop_sound(sounds.TICK)
             self._in_game = False
 
         if to_state == STATE_SIMON_PLAYING:
@@ -337,6 +344,10 @@ class StateController (threading.Thread):
         if to_state == STATE_TIMER_READY:
             self._solver_queue.put(Command(Solver.COMMAND_SET_MODE, Solver.MODE_TIME))
             self._in_game = True
+        if to_state == STATE_MATCH_PLAYING or to_state == STATE_TIMER_PLAYING:
+            self._sounds.play_sound(sounds.TICK, repeat=-1)
+        if to_state == STATE_RESET:
+            self._sounds.play_sound(sounds.KLAXON)
 
         self._state = to_state
         next_ui = self.get_ui_for_state()

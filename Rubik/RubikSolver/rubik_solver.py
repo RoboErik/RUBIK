@@ -158,7 +158,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
     def read_colors(self):
         self._led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
         self._led_strip.set_all_leds(LED_SENSOR_COLOR)
-        time.sleep(0.1)
+        time.sleep(0.05)
         results = []
         for i in range(9):
             guess_index = guess_color(i, self._read_color(i))
@@ -167,7 +167,6 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
             else:
                 results.append('F')
         self.hide_pattern()
-        time.sleep(0.1)
         return results
 
     def cube_is_down(self):

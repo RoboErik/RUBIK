@@ -37,7 +37,7 @@ https://jackbarber.co.uk/blog/2017-02-16-hide-raspberry-pi-mouse-cursor-in-raspb
 # To flip screen add the following to /boot/config.txt. See https://www.raspberrypi.org/forums/viewtopic.php?t=120793
 display_rotate=2
 
-# If audio doesn't work the only thing that seems to help is.
+# If audio doesn't work the only thing that seems to help is modprobe.
 # This is now part of sounds.py
 sudo modprobe snd-bcm2835
 # Also tried uncommenting in boot/config.txt
@@ -50,3 +50,6 @@ sudo pico /etc/modules
 2ab, 2e, 3ab, 3e, 4c, 4e from https://freesound.org/people/j_e_f_f_g/packs/20150/
 watch-tick from https://freesound.org/people/DrMinky/sounds/174721/
 bloop, buzzer, chime from http://www.wavsource.com/
+klaxon from https://freesound.org/people/jbum/sounds/32089/
+music-box from https://freesound.org/people/Flying_Deer_Fx/sounds/369404/
+The-Final-Countdown from https://en.wikipedia.org/wiki/File:Europe_-_The_Final_Countdown.ogg

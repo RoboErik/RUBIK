@@ -11,8 +11,11 @@ NOTE_2 = 5
 NOTE_3 = 6
 NOTE_4 = 7
 NOTE_5 = 8
+KLAXON = 9
+MUSIC_BOX = 10
+COUNTDOWN = 11
 
-SOUNDS_COUNT = 9
+SOUNDS_COUNT = 12
 
 BUTTON_SOUNDS = {
     event.EVENT_BUTTON1: NOTE_1,
@@ -26,8 +29,6 @@ BUTTON_SOUNDS = {
 
 class Sounds:
     def __init__(self):
-        self._intervals = [0] * SOUNDS_COUNT
-        self._timers = [None] * SOUNDS_COUNT
         self._sounds = [None] * SOUNDS_COUNT
         self._initialized = False
         self._prev_button = None
@@ -50,13 +51,22 @@ class Sounds:
         self._sounds[NOTE_3] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "3ab.wav"))
         self._sounds[NOTE_4] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "2e.wav"))
         self._sounds[NOTE_5] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "2ab.wav"))
+        self._sounds[KLAXON] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "klaxon.wav"))
+        self._sounds[MUSIC_BOX] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "music-box.wav"))
+        self._sounds[COUNTDOWN] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "The-Final-Countdown.ogg"))
         self._initialized = True
 
-    def play_sound(self, sound, maxtime_ms=0):
+    def play_sound(self, sound, maxtime_ms=0, repeat=0):
         if not self._initialized:
             print("Tried to play sound without initializing")
             return
-        self._sounds[sound].play(maxtime=maxtime_ms)
+        self._sounds[sound].play(maxtime=maxtime_ms, loops=repeat)
+
+    def stop_sound(self, sound):
+        if not self._initialized:
+            print("Tried to stop sound without initializing")
+            return
+        self._sounds[sound].stop()
 
     def play_button(self, button, duration=1500):
         if self._prev_button is not None:
@@ -64,34 +74,11 @@ class Sounds:
         self.play_sound(BUTTON_SOUNDS[button], duration)
         self._prev_button = button
 
-    def _repeat_sound_internal(self, sound):
-        if not self._initialized:
-            return
-        interval = self._intervals[sound]
-        timer = self._timers[sound]
-
-        if timer is not None:
-            timer.cancel()
-        if interval == 0:
-            return
-        self.play_sound(sound)
-
-        timer = threading.Timer(interval, self._repeat_sound_internal, [sound])
-        self._timers[sound] = timer
-        timer.start()
-
-    def repeat_sound(self, sound, interval):
-        if not self._initialized:
-            print ("Tried to repeat sound without initializing")
-            return
-        self._intervals[sound] = interval
-        self._repeat_sound_internal(sound)
-
     def cleanup(self):
         _initialized = False
-        # Cancel any sound timers
-        for i in range(len(self._intervals)):
-            self.repeat_sound(i, 0)
+        # Cancel any playing sounds
+        for i in range(len(self._sounds)):
+            self.stop_sound(i)
         # Clean up the pygame components
         pygame.mixer.quit()
         pygame.quit()

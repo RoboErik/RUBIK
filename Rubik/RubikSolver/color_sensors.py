@@ -78,7 +78,7 @@ class ColorSensors:
 
         cmd = self.__CMD_MutexZero + (sensor % self.__SENSORS_PER_MUTEX)
         mutex.write8(0, cmd)
-        time.sleep(0.02)
+        time.sleep(0.01)
         self.active_mutex = mutex
 
     def clear_active(self):

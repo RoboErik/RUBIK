@@ -35,7 +35,6 @@ class LedStrip:
             print("Setting all leds to " + str(color))
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, color & 0xffffff)
-            time.sleep(0.02)
         self.strip.show()
 
     def set_brightness(self, brightness):

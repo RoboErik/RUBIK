@@ -18,6 +18,13 @@ python setup.py build
 # cd to root of project
 chmod +x run.sh
 
+5) Copy the correct image files up to Assets
+# normal - standard images with no modifications
+# stretched - images stretched a little for if the screen resolution is off
+# flipped - upside down images, ignore
+cd Rubik/Assets
+cp <directory>/* .
+
 Running:
 ./run.sh
 

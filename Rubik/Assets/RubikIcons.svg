@@ -24,9 +24,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="1043.1159"
-     inkscape:cy="505.23575"
+     inkscape:zoom="0.5"
+     inkscape:cx="1070.2692"
+     inkscape:cy="450.43587"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -570,9 +570,9 @@
        inkscape:export-ydpi="206.84003" />
     <g
        id="g5849"
-       transform="matrix(-0.70870223,0,0,-0.77171144,404.86606,149.24792)"
-       inkscape:export-xdpi="74.341461"
-       inkscape:export-ydpi="74.341461"
+       transform="matrix(0.70870223,0,0,0.77171144,64.71429,8.842374)"
+       inkscape:export-xdpi="96.15654"
+       inkscape:export-ydpi="96.15654"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\rubik-match.png">
       <rect
          y="70.970238"
@@ -603,9 +603,10 @@
     </g>
     <g
        id="g5870"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
-       transform="rotate(180,240.01488,193.20717)">
+       inkscape:export-xdpi="96.160004"
+       inkscape:export-ydpi="96.160004"
+       transform="matrix(0.70870223,0,0,0.77171144,63.967882,48.812849)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-all.png">
       <rect
          y="173.20717"
          x="220.01488"
@@ -646,10 +647,10 @@
     </g>
     <g
        id="g5249"
-       inkscape:export-xdpi="74.341431"
-       inkscape:export-ydpi="74.341431"
+       inkscape:export-xdpi="96.333229"
+       inkscape:export-ydpi="96.333229"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\rubik-time.png"
-       transform="matrix(0.70870226,0,0,0.77171144,63.876851,36.560005)">
+       transform="matrix(-0.70870226,0,0,-0.77171144,403.6321,251.92082)">
       <g
          transform="rotate(180,239.70239,139.53455)"
          inkscape:export-ydpi="74.341431"
@@ -776,9 +777,9 @@
     </g>
     <g
        id="g5878"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
-       transform="rotate(180,292.1756,193.43442)"
+       inkscape:export-xdpi="96.160004"
+       inkscape:export-ydpi="96.160004"
+       transform="matrix(0.70870223,0,0,0.77171144,79.162185,48.864729)"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-1.png">
       <rect
          y="173.43442"
@@ -820,9 +821,9 @@
     </g>
     <g
        id="g5886"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
-       transform="rotate(180,341.69049,193.05655)"
+       inkscape:export-xdpi="96.160004"
+       inkscape:export-ydpi="96.160004"
+       transform="matrix(0.70870223,0,0,0.77171144,93.585765,48.77847)"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-2.png">
       <rect
          y="173.05655"
@@ -864,9 +865,10 @@
     </g>
     <g
        id="g5894"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
-       transform="rotate(180,391.58331,193.05655)">
+       inkscape:export-xdpi="96.160004"
+       inkscape:export-ydpi="96.160004"
+       transform="matrix(0.70870223,0,0,0.77171144,108.11943,48.778465)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-3.png">
       <rect
          y="173.05655"
          x="371.58331"
@@ -907,9 +909,9 @@
     </g>
     <g
        id="g5902"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
-       transform="rotate(180,293,246.99669)"
+       inkscape:export-xdpi="96.160004"
+       inkscape:export-ydpi="96.160004"
+       transform="matrix(0.70870223,0,0,0.77171144,79.402333,61.092376)"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-reset.png">
       <rect
          y="226.99669"
@@ -951,9 +953,9 @@
     </g>
     <g
        id="g5971"
-       transform="matrix(-0.72760417,0,0,-0.79375,498.66285,253.05912)"
-       inkscape:export-xdpi="74.339996"
-       inkscape:export-ydpi="74.339996"
+       transform="matrix(0.72760417,0,0,0.79375,74.03654,32.748088)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\confirm.png">
       <rect
          y="118.7786"
@@ -976,9 +978,10 @@
     </g>
     <g
        id="g5976"
-       transform="matrix(-1.025,0,0,-1.025,695.48479,283.58829)"
-       inkscape:export-xdpi="74.341492"
-       inkscape:export-ydpi="74.341492">
+       transform="matrix(0.72760417,0,0,0.79375,88.038984,33.059926)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\cancel.png">
       <rect
          y="120.29051"
          x="323.20236"
@@ -1002,9 +1005,9 @@
     <g
        id="g6554"
        style="stroke:none"
-       inkscape:export-xdpi="76.200005"
-       inkscape:export-ydpi="76.200005"
-       transform="matrix(-0.72760417,0,0,-0.79375,505.19281,145.25796)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"
+       transform="matrix(0.72760417,0,0,0.79375,75.066119,20.352834)"
        inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\reset.png">
       <rect
          y="58.680393"

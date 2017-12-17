@@ -391,6 +391,8 @@ class StateController (threading.Thread):
                 break
             if self._in_game:
                 time.sleep(0.1)
+            elif utils.use_buttons():
+                    time.sleep(0.05)
             else:
                 print("Enter (q)uit or 0-9 for events")
                 key = utils.getChar()

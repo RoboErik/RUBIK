@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO
 from .. import utils
 from .. import event
 from .. import queue_common
+from .. import pins
 
 Command = queue_common.Command
 
@@ -32,6 +33,47 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         "R": event.EVENT_BUTTON4,
         "B": event.EVENT_BUTTON5,
     }
+
+    # GPIO.input(pin)
+    # channel = GPIO.wait_for_edge(channel, GPIO_RISING, timeout=5000)
+    # GPIO.add_event_detect(channel, GPIO.RISING, callback=my_callback)
+    BUTTON_PINS = [
+        pins.SW0_IN,
+        pins.SW1_IN,
+        pins.SW2_IN,
+        pins.SW3_IN,
+        pins.SW4_IN,
+    ]
+    # GPIO.output(pin, GPIO.LOW or GPIO.HIGH)
+    LED_PINS = [
+        pins.SW0_LED,
+        pins.SW1_LED,
+        pins.SW2_LED,
+        pins.SW3_LED,
+        pins.SW4_LED,
+    ]
+    BUTTON_LETTER_TO_PIN = {
+        "Y": BUTTON_PINS[0],
+        "G": BUTTON_PINS[1],
+        "W": BUTTON_PINS[2],
+        "R": BUTTON_PINS[3],
+        "B": BUTTON_PINS[4],
+    }
+    PIN_TO_LETTER = {
+        BUTTON_PINS[0]: "Y",
+        BUTTON_PINS[1]: "G",
+        BUTTON_PINS[2]: "W",
+        BUTTON_PINS[3]: "R",
+        BUTTON_PINS[4]: "B"
+    }
+    BUTTON_LETTER_TO_LED = {
+        "Y": LED_PINS[0],
+        "G": LED_PINS[1],
+        "W": LED_PINS[2],
+        "R": LED_PINS[3],
+        "B": LED_PINS[4],
+    }
+
     LIT_TIME = .75
     OFF_TIME = .25
     SPEED_SCALE = 0.98
@@ -44,6 +86,11 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         self._curr_speed = 1
         threading.Thread.__init__(self)
         queue_common.QueueCommon.__init__(self)
+        GPIO.add_event_detect(self.BUTTON_PINS[0], GPIO.FALLING, callback=self.on_press_b1)
+        GPIO.add_event_detect(self.BUTTON_PINS[1], GPIO.FALLING, callback=self.on_press_b2)
+        GPIO.add_event_detect(self.BUTTON_PINS[2], GPIO.FALLING, callback=self.on_press_b3)
+        GPIO.add_event_detect(self.BUTTON_PINS[3], GPIO.FALLING, callback=self.on_press_b4)
+        GPIO.add_event_detect(self.BUTTON_PINS[4], GPIO.FALLING, callback=self.on_press_b5)
 
     def on_press_b1(self):
         if self._mode == MODE_LISTENING:
@@ -51,17 +98,49 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                                         event.EVENT_BUTTON1))
         print("b1 pressed")
 
-    def wait_for_press(self):
-        # TODO wait for correct button or timeout
-        value = utils.getChar()
-        return value
+    def on_press_b2(self):
+        if self._mode == MODE_LISTENING:
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_BUTTON2))
+        print("b2 pressed")
+
+    def on_press_b3(self):
+        if self._mode == MODE_LISTENING:
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_BUTTON3))
+        print("b3 pressed")
+
+    def on_press_b4(self):
+        if self._mode == MODE_LISTENING:
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_BUTTON4))
+        print("b4 pressed")
+
+    def on_press_b5(self):
+        if self._mode == MODE_LISTENING:
+            self.send_event(event.Event(event.SOURCE_SIMON,
+                                        event.EVENT_BUTTON5))
+        print("b5 pressed")
+
+    def wait_for_press(self, index):
+        # Wait for correct button or timeout
+        if utils.use_buttons():
+            pin = GPIO.wait_for_edge(self.BUTTON_PINS[index], GPIO.FALLING,
+                                     timeout=int(self._curr_speed * self.TIMEOUT * 1000))
+            if pin is None:
+                return 'Z'
+            return self.PIN_TO_LETTER[pin]
+        else:
+            return utils.getChar()
 
     def show_value(self, value):
-        # TODO: turn on correct button & play sound
+        pin = self.BUTTON_LETTER_TO_LED[value]
+        GPIO.ouput(pin, GPIO.HIGH)
         print("\r" + value)  # , sep=' ', end='', flush=True)
 
     def turn_off(self, value):
-        # TODO: stop showing all values/sounds
+        for pin in self.LED_PINS:
+            GPIO.output(pin, GPIO.LOW)
         clear = " " * len(value)
         print("\r" + clear)  # , sep=' ', end='', flush=True)
         return
@@ -75,7 +154,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         print("Watch close")
         for val in seq:
             time.sleep(self.OFF_TIME * self._curr_speed)
-            colorStr = self.BUTTONS[val]
+            colorStr = self.BUTTONS_LETTER[val]
             self.show_value(colorStr)
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_PLAY_SOUND,
@@ -88,7 +167,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     def read_sequence(self, seq):
         for index in seq:
             wait_start = time.time()
-            val = self.wait_for_press()
+            val = self.wait_for_press(index)
             delay = time.time() - wait_start
             if delay > self.TIMEOUT * self._curr_speed:
                 print("Too slow!")

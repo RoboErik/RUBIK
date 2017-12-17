@@ -34,3 +34,7 @@ def getChar():
 def curr_time_s():
     return time.time()
 
+
+# whether the buttons or keyboard should be used as input
+def use_buttons():
+    return False

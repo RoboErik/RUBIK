@@ -5,6 +5,7 @@ from Queue import *
 from RubikGui import main_gui as Gui
 from RubikSolver import rubik_solver as Solver
 from SimonSays import simon_says as Simon
+from GearRatios import gear_ratios as Gears
 from . import utils
 from . import queue_common
 from event import *
@@ -111,6 +112,12 @@ TRANSITION_MAP = {
     }
 }
 
+GEAR_SOUNDS = {
+    Gears.RESULT_JUST_RIGHT: sounds.COUNTDOWN,
+    Gears.RESULT_TOO_LOW: sounds.MUSIC_BOX,
+    Gears.RESULT_TOO_HIGH: sounds.MUSIC_BOX
+}
+
 RESET_DETECT_WINDOW = 0.5
 
 def get_state_string(state):
@@ -134,7 +141,7 @@ def s_to_time_string(secs):
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
 class StateController (threading.Thread):
 
-    def __init__(self, gui, solver, simon):
+    def __init__(self, gui, solver, simon, gears):
         self._in_game = False
         self._state = STATE_HOME
         self._ui_state = Gui.UI_HOME
@@ -157,6 +164,12 @@ class StateController (threading.Thread):
         self._simon_queue = simon.get_queue()
         simon.set_event_queue(self._event_queue)
         simon.start()
+
+        self._gears = gears
+        self._gears_queue = gears.get_queue()
+        self._gear_sound = None
+        gears.set_event_queue(self._event_queue)
+        gears.start()
 
         self._gui.set_ui_state(Gui.UI_HOME)
         self._scores = None
@@ -183,6 +196,18 @@ class StateController (threading.Thread):
         score_file = open("puzzle_scores.txt", mode='w')
         cPickle.dump(self._scores, score_file)
 
+    def play_gear_sound(self, which):
+        if which is None:
+            if self._gear_sound is not None:
+                self._sounds.stop_sound(self._gear_sound)
+            self._gear_sound = None
+        else:
+            sound = GEAR_SOUNDS[which]
+            if sound != self._gear_sound:
+                self._sounds.stop_sound(self._gear_sound)
+                self._sounds.play_sound(sound, repeat=-1)
+                self._gear_sound = sound
+
     def get_ui_for_state(self):
         return STATE_TO_UI.get(self._state, self._ui_state)
 
@@ -204,6 +229,9 @@ class StateController (threading.Thread):
         next_state = TRANSITION_MAP.get(curr_state).get(event.event, curr_state)
 
         self.check_for_reset(curr_state, event)
+
+        if event.source == SOURCE_GEARS and event.event == EVENT_PLAY_SOUND:
+            self._play_gear_sound(event.data)
 
         if event.source == SOURCE_SIMON and event.event == EVENT_FAILURE:
             self._sounds.play_sound(sounds.BUZZ)

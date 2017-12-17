@@ -10,6 +10,7 @@ from Rubik import utils
 from Rubik import state_controller
 
 pins_setup = False
+TEST_MODE = True
 
 try:
     # for running on the Pi
@@ -27,49 +28,53 @@ root = tkinter.Tk()
 running = True
 
 while running:
-#for x in range(0, 2):
     active = []
 
     # Set up puzzle threads
     gui = main_gui.Gui(root)
     simonSays = simon_says.SimonSays()
     gearRatio = gear_ratios.GearRatio()
-    if pins_setup:
-        rubikSolver = rubik_solver.RubikSolver()
+    rubikSolver = rubik_solver.RubikSolver()
 
-    stateController = state_controller.StateController(gui, rubikSolver, simonSays)
+    stateController = state_controller.StateController(gui, rubikSolver, simonSays, gearRatio)
 
+    if TEST_MODE:
+        print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI. b to Toggle buttons")
+        #nextChar = 'G'
+        nextChar = utils.getChar()
 
-    print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI. b to Toggle buttons")
-    #nextChar = 'G'
-    nextChar = utils.getChar()
-
-    if nextChar.upper() == 'S':
-        simonSays.start()
-        active.append(simonSays)
-    elif nextChar.upper() == 'G':
-        gearRatio.start()
-        active.append(gearRatio)
-    elif nextChar.upper() == 'R':
-        rubikSolver.start()
-        active.append(rubikSolver)
-    elif nextChar.upper() == 'U':
+        if nextChar.upper() == 'S':
+            simonSays.start()
+            active.append(simonSays)
+        elif nextChar.upper() == 'G':
+            gearRatio.start()
+            active.append(gearRatio)
+        elif nextChar.upper() == 'R':
+            rubikSolver.start()
+            active.append(rubikSolver)
+        elif nextChar.upper() == 'U':
+            stateController.start()
+            active.append(stateController)
+        elif nextChar.upper() == 'B':
+            utils.use_buttons = not utils.use_buttons
+            print("set using buttons to " + str(utils.use_buttons))
+    else:
+        utils.use_buttons = True
         stateController.start()
         active.append(stateController)
-    elif nextChar.upper() == 'B':
-        utils.use_buttons = not utils.use_buttons
-        print("set using buttons to " + str(utils.use_buttons))
 
     # Start the UI thread
     root.mainloop()
     print("Waiting for threads to finish\n")
     for thread in active:
         thread.join()
-    print("Threads have finished. Run again? Y/N")
-    # nextChar = 'N'  # utils.getChar()
-    nextChar = utils.getChar()
-    if nextChar.upper() != 'Y':
-        running = False
+
+    if TEST_MODE:
+        print("Threads have finished. Run again? Y/N")
+        # nextChar = 'N'  # utils.getChar()
+        nextChar = utils.getChar()
+        if nextChar.upper() != 'Y':
+            running = False
 
 root.destroy()
 if pins_setup:

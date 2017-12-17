@@ -1,62 +1,71 @@
-import threading
+import threading, time
+import RPi.GPIO as GPIO
+
+from .. import pins
+from .. import utils
+from .. import queue_common
+from .. import event
+
+COMMAND_QUIT = -1
+
+RESULT_TOO_LOW = 1
+RESULT_TOO_HIGH = 2
+RESULT_JUST_RIGHT = 3
+
+TARGET_RATIO = 3.2
+
+TIMEOUT = 3  # seconds
+RESULT_TIMEOUT = 2  # seconds
 
 
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
-class GearRatio (threading.Thread):
-    PIN1 = 5
-    PIN2 = 6
-
+class GearRatio (threading.Thread, queue_common.QueueCommon):
     STATE_QUIT = -1
-    STATE_IDLE = 1
-    STATE_START = 2
-    STATE_COUNTING = 3
-    STATE_RESULT = 4
-
-    RESULT_SOUNDS = [] #TODO add filenames for different result sounds
 
     def __init__(self):
-        self._state = self.STATE_IDLE
-        self._result = 0
+        self._ratio_count = 0
+        self._counting = False
+        self._last_event_time = None
+        self._last_result_time = None
+        self._state = 0
+        GPIO.add_event_detect(pins.ENC0, GPIO.FALLING, callback=self.on_enc0)
+        GPIO.add_event_detect(pins.ENC1, GPIO.FALLING, callback=self.on_enc1)
         threading.Thread.__init__(self)
+        queue_common.QueueCommon.__init__(self)
 
-    def wait_for_first_click(self):
-        #TODO wait for PIN1 to change then we'll start the music
-        self._state = self.STATE_START
-        return
+    def on_enc0(self):
+        if self._last_result_time is not None and time.time() - self._last_result_time < RESULT_TIMEOUT:
+            # Don't do anything while a result is playing
+            return
+        elif self._last_event_Time is None or time.time() - self._last_event_time > TIMEOUT:
+            self._ratio_count = 0
+            self._counting = True
+        else:
+            print("Finished a full rotation, count was " + str(self._ratio_count))
+            if self._ratio_count == 3:
+                self.send_event(event.Event(event.SOURCE_GEARS, event.EVENT_PLAY_SOUND, RESULT_JUST_RIGHT))
+            elif self._ratio_count < 3:
+                self.send_event(event.Event(event.SOURCE_GEARS, event.EVENT_PLAY_SOUND, RESULT_TOO_LOW))
+            else:
+                self.send_event(event.Event(event.SOURCE_GEARS, event.EVENT_PLAY_SOUND, RESULT_TOO_HIGH))
+            self._last_result_time = time.time()
+        self._last_event_time = time.time()
 
-    def wait_for_second_click(self):
-        #TODO wait for PIN2 to change, then we'll start counting revolutions
-        #TODO if timer expires reset
-        self._state = self.STATE_COUNTING
+    def on_enc1(self):
+        self._ratio_count += 1
 
-    def count_clicks(self):
-        #TODO count the ratio of PIN2 to PIN1 to check if the ratio is correct.
-        self._result = 4 #set to ratio
-        self._state = self.STATE_RESULT
-
-    def play_result(self):
-        #TODO play the sound file that is closest to the result
-        self._state = self.STATE_QUIT
-
-    def error(self):
-        print("Unknown error in gear ratios!")
-
-    def state_to_strings(self):
-        switcher = {
-            self.STATE_IDLE: self.wait_for_first_click,
-            self.STATE_START: self.wait_for_second_click,
-            self.STATE_COUNTING: self.count_clicks,
-            self.STATE_RESULT: self.play_result
-        }
-        return switcher.get(self._state, self.error)
+    def handle_command(self, command):
+        if command.command == COMMAND_QUIT:
+            self._state = self.STATE_QUIT
 
     def run(self):
         print("Running gear ratios!")
         while True:
             if self._state == self.STATE_QUIT:
                 break
-            print("Entering state " + str(self._state))
-            f_state = self.state_to_strings()
-            f_state()
-        #TODO switch statement for state changes
+            self.check_queue()
+            time.sleep(0.1)
+            if self._last_event_time is not None and time.time() - self._last_event_time > TIMEOUT:
+                self.send_event(event.Event(event.SOURCE_GEARS, event.EVENT_PLAY_SOUND))
+                self._last_event_time = None
         return

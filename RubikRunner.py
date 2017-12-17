@@ -40,7 +40,7 @@ while running:
     stateController = state_controller.StateController(gui, rubikSolver, simonSays)
 
 
-    print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI.")
+    print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI. b to Toggle buttons")
     #nextChar = 'G'
     nextChar = utils.getChar()
 
@@ -56,6 +56,9 @@ while running:
     elif nextChar.upper() == 'U':
         stateController.start()
         active.append(stateController)
+    elif nextChar.upper() == 'B':
+        utils.use_buttons = not utils.use_buttons
+        print("set using buttons to " + str(utils.use_buttons))
 
     # Start the UI thread
     root.mainloop()

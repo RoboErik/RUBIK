@@ -1,5 +1,8 @@
 import time
 
+use_buttons = False
+
+
 def getChar():
     # figure out which function to use once, and store it in _func
     if "_func" not in getChar.__dict__:
@@ -37,4 +40,4 @@ def curr_time_s():
 
 # whether the buttons or keyboard should be used as input
 def use_buttons():
-    return False
+    return use_buttons

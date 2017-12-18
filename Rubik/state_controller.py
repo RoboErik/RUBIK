@@ -204,7 +204,8 @@ class StateController (threading.Thread):
         else:
             sound = GEAR_SOUNDS[which]
             if sound != self._gear_sound:
-                self._sounds.stop_sound(self._gear_sound)
+                if self._gear_sound is not None:
+                    self._sounds.stop_sound(self._gear_sound)
                 self._sounds.play_sound(sound, repeat=-1)
                 self._gear_sound = sound
 
@@ -231,7 +232,7 @@ class StateController (threading.Thread):
         self.check_for_reset(curr_state, event)
 
         if event.source == SOURCE_GEARS and event.event == EVENT_PLAY_SOUND:
-            self._play_gear_sound(event.data)
+            self.play_gear_sound(event.data)
 
         if event.source == SOURCE_SIMON and event.event == EVENT_FAILURE:
             self._sounds.play_sound(sounds.BUZZ)
@@ -412,24 +413,26 @@ class StateController (threading.Thread):
         print("Running state controller!")
         self._sounds.prepare()
         self._sounds.play_sound(sounds.BLOOP)
-        while True:
-            if self._state == STATE_EXIT:
-                self._gui_queue.put(Command(Gui.UI_QUIT))
-                self._simon_queue.put(Command(Simon.COMMAND_QUIT))
-                break
-            if self._in_game:
-                time.sleep(0.1)
-            elif utils.use_buttons():
-                    time.sleep(0.05)
-            else:
-                print("Enter (q)uit or 0-9 for events")
-                key = utils.getChar()
-                if key.upper() == 'Q':
-                    self._state = STATE_EXIT
+        try:
+            while True:
+                if self._state == STATE_EXIT:
+                    break
+                if self._in_game:
+                    time.sleep(0.1)
+                elif utils.use_buttons():
+                        time.sleep(0.05)
                 else:
-                    event = ord(key) - ord('0')
-                    self._event_queue.put(Event(SOURCE_OTHER, event))
-                    self._sounds.play_sound(sounds.BLOOP)
+                    print("Enter (q)uit or 0-9 for events")
+                    key = utils.getChar()
+                    if key.upper() == 'Q':
+                        self._state = STATE_EXIT
+                    else:
+                        event = ord(key) - ord('0')
+                        self._event_queue.put(Event(SOURCE_OTHER, event))
+                        self._sounds.play_sound(sounds.BLOOP)
 
-            self.check_queue()
-        self._sounds.cleanup()
+                self.check_queue()
+        finally:
+            self._gui_queue.put(Command(Gui.UI_QUIT))
+            self._simon_queue.put(Command(Simon.COMMAND_QUIT))
+            self._sounds.cleanup()

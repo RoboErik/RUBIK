@@ -1,4 +1,4 @@
-import os, subprocess, threading
+import os, subprocess, time
 import pygame
 import event
 
@@ -37,8 +37,10 @@ class Sounds:
         if self._initialized:
             print("Called initialized twice!")
             return
-        subprocess.call(['amixer', 'cset', "name='PCM Playback Route'", '2'])
         subprocess.call(['sudo', 'modprobe', 'snd-bcm2835'])
+        time.sleep(.5)
+        subprocess.call(['amixer', 'cset', "name='PCM Playback Route'", '2'])
+        subprocess.call(['amixer', 'sset', "'PCM'", '100%'])
         pygame.init()
         pygame.mixer.init()
 

@@ -37,6 +37,7 @@ while running:
     rubikSolver = rubik_solver.RubikSolver()
 
     stateController = state_controller.StateController(gui, rubikSolver, simonSays, gearRatio)
+    start_ui = True
 
     if TEST_MODE:
         print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI. b to Toggle buttons")
@@ -58,13 +59,15 @@ while running:
         elif nextChar.upper() == 'B':
             utils.use_buttons = not utils.use_buttons
             print("set using buttons to " + str(utils.use_buttons))
+            start_ui = False
     else:
         utils.use_buttons = True
         stateController.start()
         active.append(stateController)
 
-    # Start the UI thread
-    root.mainloop()
+    if start_ui:
+        # Start the UI thread
+        root.mainloop()
     print("Waiting for threads to finish\n")
     for thread in active:
         thread.join()

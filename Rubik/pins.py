@@ -32,7 +32,7 @@ ENC1 = 33
 
 
 def setup():
-    GPIO.setmode(GPIO.BCM)
+    GPIO.setmode(GPIO.BOARD)
 
     # Input pins
     GPIO.setup(SW0_IN, GPIO.IN)

@@ -570,10 +570,10 @@
        inkscape:export-ydpi="206.84003" />
     <g
        id="g5849"
-       transform="matrix(0.70870223,0,0,0.77171144,64.71429,8.842374)"
+       transform="matrix(0.77519784,0,0,0.77354841,48.756531,8.6752646)"
        inkscape:export-xdpi="96.15654"
        inkscape:export-ydpi="96.15654"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\rubik-match.png">
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\rubik-match.png">
       <rect
          y="70.970238"
          x="219.98215"
@@ -605,8 +605,8 @@
        id="g5870"
        inkscape:export-xdpi="96.160004"
        inkscape:export-ydpi="96.160004"
-       transform="matrix(0.70870223,0,0,0.77171144,63.967882,48.812849)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-all.png">
+       transform="matrix(0.77519784,0,0,0.77354841,48.007946,48.457934)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\simon-all.png">
       <rect
          y="173.20717"
          x="220.01488"
@@ -646,13 +646,12 @@
          style="fill:#ffffff;fill-opacity:1;stroke:#000d00;stroke-width:0.80839902;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <g
-       id="g5249"
-       inkscape:export-xdpi="96.333229"
-       inkscape:export-ydpi="96.333229"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\rubik-time.png"
-       transform="matrix(-0.70870226,0,0,-0.77171144,403.6321,251.92082)">
+       id="g1017"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\rubik-time.png"
+       inkscape:export-xdpi="74.341431"
+       inkscape:export-ydpi="74.341431">
       <g
-         transform="rotate(180,239.70239,139.53455)"
+         transform="matrix(0.77519782,0,0,0.77354841,47.93771,36.303681)"
          inkscape:export-ydpi="74.341431"
          inkscape:export-xdpi="74.341431"
          id="g5862">
@@ -737,7 +736,7 @@
       <g
          inkscape:export-ydpi="74.341431"
          inkscape:export-xdpi="74.341431"
-         transform="rotate(180,239.6369,138.29897)"
+         transform="matrix(0.77519782,0,0,0.77354841,48.039245,36.627742)"
          id="g5732">
         <circle
            style="fill:#000000;fill-opacity:1;stroke:#b62d2d;stroke-width:0.3906123;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -779,8 +778,8 @@
        id="g5878"
        inkscape:export-xdpi="96.160004"
        inkscape:export-ydpi="96.160004"
-       transform="matrix(0.70870223,0,0,0.77171144,79.162185,48.864729)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-1.png">
+       transform="matrix(0.77519784,0,0,0.77354841,59.73379,48.509396)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\simon-1.png">
       <rect
          y="173.43442"
          x="272.1756"
@@ -823,8 +822,8 @@
        id="g5886"
        inkscape:export-xdpi="96.160004"
        inkscape:export-ydpi="96.160004"
-       transform="matrix(0.70870223,0,0,0.77171144,93.585765,48.77847)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-2.png">
+       transform="matrix(0.77519784,0,0,0.77354841,70.864847,48.423831)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\simon-2.png">
       <rect
          y="173.05655"
          x="321.69049"
@@ -867,8 +866,8 @@
        id="g5894"
        inkscape:export-xdpi="96.160004"
        inkscape:export-ydpi="96.160004"
-       transform="matrix(0.70870223,0,0,0.77171144,108.11943,48.778465)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-3.png">
+       transform="matrix(0.77519784,0,0,0.77354841,82.080858,48.423826)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\simon-3.png">
       <rect
          y="173.05655"
          x="371.58331"
@@ -911,8 +910,8 @@
        id="g5902"
        inkscape:export-xdpi="96.160004"
        inkscape:export-ydpi="96.160004"
-       transform="matrix(0.70870223,0,0,0.77171144,79.402333,61.092376)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\simon-reset.png">
+       transform="matrix(0.77519784,0,0,0.77354841,59.919119,60.638651)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\simon-reset.png">
       <rect
          y="226.99669"
          x="273"
@@ -953,10 +952,10 @@
     </g>
     <g
        id="g5971"
-       transform="matrix(0.72760417,0,0,0.79375,74.03654,32.748088)"
+       transform="matrix(0.79375,0,0,0.79375,54.735345,32.748088)"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\confirm.png">
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\confirm.png">
       <rect
          y="118.7786"
          x="271.79761"
@@ -978,10 +977,10 @@
     </g>
     <g
        id="g5976"
-       transform="matrix(0.72760417,0,0,0.79375,88.038984,33.059926)"
+       transform="matrix(0.79375,0,0,0.79375,65.337579,33.059926)"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\cancel.png">
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\cancel.png">
       <rect
          y="120.29051"
          x="323.20236"
@@ -1007,8 +1006,8 @@
        style="stroke:none"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96"
-       transform="matrix(0.72760417,0,0,0.79375,75.066119,20.352834)"
-       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\flipped\reset.png">
+       transform="matrix(0.79375,0,0,0.79375,55.514907,20.352834)"
+       inkscape:export-filename="C:\Users\Erik\PycharmProjects\RUBIK\Rubik\Assets\normal\reset.png">
       <rect
          y="58.680393"
          x="275.57739"

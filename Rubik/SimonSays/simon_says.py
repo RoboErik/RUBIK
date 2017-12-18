@@ -19,8 +19,8 @@ COMMAND_CHANGE_MODE = 0
 
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
 class SimonSays(threading.Thread, queue_common.QueueCommon):
-    BUTTONS = ["(R)ed", "(B)lue", "(G)reen", "(Y)ellow", "(W)hite"]
-    BUTTON_LETTER = ["R", "B", "G", "Y", "W"]
+    BUTTON_STRINGS = ["(R)ed", "(B)lue", "(G)reen", "(Y)ellow", "(W)hite"]
+    BUTTON_LETTERS = ["R", "B", "G", "Y", "W"]
     BUTTON_EVENTS = [event.EVENT_BUTTON4,  # R
                      event.EVENT_BUTTON5,  # B
                      event.EVENT_BUTTON2,  # G
@@ -38,19 +38,19 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     # channel = GPIO.wait_for_edge(channel, GPIO_RISING, timeout=5000)
     # GPIO.add_event_detect(channel, GPIO.RISING, callback=my_callback)
     BUTTON_PINS = [
-        pins.SW0_IN,
-        pins.SW1_IN,
-        pins.SW2_IN,
-        pins.SW3_IN,
         pins.SW4_IN,
+        pins.SW3_IN,
+        pins.SW2_IN,
+        pins.SW1_IN,
+        pins.SW0_IN
     ]
     # GPIO.output(pin, GPIO.LOW or GPIO.HIGH)
     LED_PINS = [
-        pins.SW0_LED,
-        pins.SW1_LED,
-        pins.SW2_LED,
-        pins.SW3_LED,
         pins.SW4_LED,
+        pins.SW3_LED,
+        pins.SW2_LED,
+        pins.SW1_LED,
+        pins.SW0_LED,
     ]
     BUTTON_LETTER_TO_PIN = {
         "Y": BUTTON_PINS[0],
@@ -84,39 +84,56 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         self._mode = MODE_LISTENING
         self._score = 0
         self._curr_speed = 1
+        self._is_listening = False
         threading.Thread.__init__(self)
         queue_common.QueueCommon.__init__(self)
-        GPIO.add_event_detect(self.BUTTON_PINS[0], GPIO.FALLING, callback=self.on_press_b1)
-        GPIO.add_event_detect(self.BUTTON_PINS[1], GPIO.FALLING, callback=self.on_press_b2)
-        GPIO.add_event_detect(self.BUTTON_PINS[2], GPIO.FALLING, callback=self.on_press_b3)
-        GPIO.add_event_detect(self.BUTTON_PINS[3], GPIO.FALLING, callback=self.on_press_b4)
-        GPIO.add_event_detect(self.BUTTON_PINS[4], GPIO.FALLING, callback=self.on_press_b5)
+        self.start_listening_for_events()
 
-    def on_press_b1(self):
+    def start_listening_for_events(self):
+        if self._is_listening:
+            return
+        GPIO.add_event_detect(self.BUTTON_PINS[0], GPIO.FALLING, callback=self.on_press_b1, bouncetime=150)
+        GPIO.add_event_detect(self.BUTTON_PINS[1], GPIO.FALLING, callback=self.on_press_b2, bouncetime=150)
+        GPIO.add_event_detect(self.BUTTON_PINS[2], GPIO.FALLING, callback=self.on_press_b3, bouncetime=150)
+        GPIO.add_event_detect(self.BUTTON_PINS[3], GPIO.FALLING, callback=self.on_press_b4, bouncetime=150)
+        GPIO.add_event_detect(self.BUTTON_PINS[4], GPIO.FALLING, callback=self.on_press_b5, bouncetime=150)
+        self._is_listening = True
+
+    def stop_listening_for_events(self):
+        if not self._is_listening:
+            return
+        GPIO.remove_event_detect(self.BUTTON_PINS[0])
+        GPIO.remove_event_detect(self.BUTTON_PINS[1])
+        GPIO.remove_event_detect(self.BUTTON_PINS[2])
+        GPIO.remove_event_detect(self.BUTTON_PINS[3])
+        GPIO.remove_event_detect(self.BUTTON_PINS[4])
+        self._is_listening = False
+
+    def on_press_b1(self, button):
         if self._mode == MODE_LISTENING:
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_BUTTON1))
         print("b1 pressed")
 
-    def on_press_b2(self):
+    def on_press_b2(self, button):
         if self._mode == MODE_LISTENING:
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_BUTTON2))
         print("b2 pressed")
 
-    def on_press_b3(self):
+    def on_press_b3(self, button):
         if self._mode == MODE_LISTENING:
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_BUTTON3))
         print("b3 pressed")
 
-    def on_press_b4(self):
+    def on_press_b4(self, button):
         if self._mode == MODE_LISTENING:
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_BUTTON4))
         print("b4 pressed")
 
-    def on_press_b5(self):
+    def on_press_b5(self, button):
         if self._mode == MODE_LISTENING:
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_BUTTON5))
@@ -127,6 +144,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         if utils.use_buttons():
             pin = GPIO.wait_for_edge(self.BUTTON_PINS[index], GPIO.FALLING,
                                      timeout=int(self._curr_speed * self.TIMEOUT * 1000))
+            GPIO.remove_event_detect(self.BUTTON_PINS[index])
             if pin is None:
                 return 'Z'
             return self.PIN_TO_LETTER[pin]
@@ -135,7 +153,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
 
     def show_value(self, value):
         pin = self.BUTTON_LETTER_TO_LED[value]
-        GPIO.ouput(pin, GPIO.HIGH)
+        GPIO.output(pin, GPIO.HIGH)
         print("\r" + value)  # , sep=' ', end='', flush=True)
 
     def turn_off(self, value):
@@ -146,7 +164,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         return
 
     def add_random(self, seq):
-        index = random.randint(0, len(self.BUTTONS) - 1)
+        index = random.randint(0, len(self.BUTTON_STRINGS) - 1)
         # print("rand value was " + str(index))
         seq.append(index)
 
@@ -154,7 +172,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         print("Watch close")
         for val in seq:
             time.sleep(self.OFF_TIME * self._curr_speed)
-            colorStr = self.BUTTONS_LETTER[val]
+            colorStr = self.BUTTON_LETTERS[val]
             self.show_value(colorStr)
             self.send_event(event.Event(event.SOURCE_SIMON,
                                         event.EVENT_PLAY_SOUND,
@@ -172,7 +190,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
             if delay > self.TIMEOUT * self._curr_speed:
                 print("Too slow!")
                 return False
-            if val.upper() != self.BUTTON_LETTER[index]:
+            if val.upper() != self.BUTTON_LETTERS[index]:
                 print("You lose!")
                 return False
             self.send_event(event.Event(event.SOURCE_SIMON,
@@ -186,11 +204,15 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
         if command.command == COMMAND_QUIT:
             self._mode = -1
         elif command.command == COMMAND_CHANGE_MODE:
+            self.stop_listening_for_events()
             self._mode = command.data
+            if self._mode == MODE_LISTENING:
+                self.start_listening_for_events()
 
     def run(self):
-        # TODO finalize pin ports
-        GPIO.add_event_detect(17, GPIO.FALLING, callback=self.on_press_b1, bouncetime=300)
+        GPIO.output((pins.SW0_LED, pins.SW1_LED, pins.SW2_LED, pins.SW3_LED, pins.SW4_LED), GPIO.HIGH)
+        time.sleep(1)
+        GPIO.output((pins.SW0_LED, pins.SW1_LED, pins.SW2_LED, pins.SW3_LED, pins.SW4_LED), GPIO.LOW)
         while self._mode != -1:
             if self._mode == MODE_PLAYING:
                 print("Starting Simon Says!")
@@ -224,4 +246,3 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                 # TODO listen for button presses and send them to controller
                 self.check_queue()
                 time.sleep(0.1)
-        GPIO.remove_event_detect(17)

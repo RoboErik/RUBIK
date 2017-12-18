@@ -26,7 +26,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.93404908"
-     inkscape:cx="428.17648"
+     inkscape:cx="506.97934"
      inkscape:cy="858.88188"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -58,30 +58,57 @@
        width="169.33333"
        height="127"
        x="26.910172"
-       y="-1.1216507"
+       y="0.97448218"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot4504"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-       transform="matrix(0.26458333,0,0,0.26458333,-13.13272,-2.7354616)"
+       transform="matrix(0.26458333,0,0,0.26458333,-13.019522,2.2083257)"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96"><flowRegion
          id="flowRegion4506"><rect
            id="rect4508"
-           width="639.99994"
-           height="341.8916"
+           width="640.00006"
+           height="480"
            x="151.34322"
-           y="74.125275" /></flowRegion><flowPara
+           y="6.099443" /></flowRegion><flowPara
          id="flowPara4510"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:64px;font-family:'Brush Script MT';-inkscape-font-specification:'Brush Script MT, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">For Thom and Allison</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:64px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">For Thom and Allison</flowPara><flowPara
          id="flowPara4516"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:122.66667175px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">RUBIK</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:85.33333588px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">RUBIK</flowPara><flowPara
          id="flowPara4512"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Brush Script MT';-inkscape-font-specification:'Brush Script MT, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">Riddle Unusual Box, Identify Knowledge</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">Riddle Unusual Box, Identify Knowledge</flowPara><flowPara
          id="flowPara4518"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Brush Script MT';-inkscape-font-specification:'Brush Script MT, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1">From Andrew, Erik, John, Rachel, and Sean</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1"></flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1"
+         id="flowPara1596">From:</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1"
+         id="flowPara1584"> Andrew, Erik, John,</flowPara><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1"
+         id="flowPara1586"> Rachel, and Sean</flowPara><flowPara
          id="flowPara4514"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.33333206px;font-family:'Brush Script MT';-inkscape-font-specification:'Brush Script MT, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1" /></flowRoot>  </g>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:61.33333588px;font-family:'Poor Richard';-inkscape-font-specification:'Poor Richard, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1576"
+       style="fill:black;fill-opacity:1;stroke:none;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion1578"><rect
+           id="rect1580"
+           width="0"
+           height="59.954021"
+           x="434.66666"
+           y="352.75287" /></flowRegion><flowPara
+         id="flowPara1582"></flowPara></flowRoot>    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="101.12558"
+       y="80.019073"
+       id="text1590"><tspan
+         sodipodi:role="line"
+         x="101.12558"
+         y="89.674568"
+         style="stroke-width:0.26458332"
+         id="tspan1592" /></text>
+  </g>
 </svg>

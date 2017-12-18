@@ -54,7 +54,7 @@ class Sounds:
         self._sounds[NOTE_4] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "2e.wav"))
         self._sounds[NOTE_5] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "2ab.wav"))
         self._sounds[KLAXON] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "klaxon.wav"))
-        self._sounds[MUSIC_BOX] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "music-box.wav"))
+        self._sounds[MUSIC_BOX] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "musicbox.wav"))
         self._sounds[COUNTDOWN] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "The-Final-Countdown.ogg"))
         self._initialized = True
 
@@ -62,12 +62,14 @@ class Sounds:
         if not self._initialized:
             print("Tried to play sound without initializing")
             return
+        print("Playing sound " + str(self._sounds[sound]) + " which is #" + str(sound))
         self._sounds[sound].play(maxtime=maxtime_ms, loops=repeat)
 
     def stop_sound(self, sound):
         if not self._initialized:
             print("Tried to stop sound without initializing")
             return
+        print("Stopping sound " + str(sound))
         self._sounds[sound].stop()
 
     def play_button(self, button, duration=1500):

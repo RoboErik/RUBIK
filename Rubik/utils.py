@@ -1,6 +1,6 @@
 import time
 
-use_buttons = False
+use_buttons = True
 
 
 def getChar():

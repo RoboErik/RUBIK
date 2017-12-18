@@ -150,6 +150,7 @@ class StateController (threading.Thread):
         self._reset_buttons = None
 
         self._event_queue = Queue()
+        self._sounds = sounds.Sounds()
 
         self._gui = gui
         self._gui_queue = gui.get_queue()
@@ -174,8 +175,6 @@ class StateController (threading.Thread):
         self._gui.set_ui_state(Gui.UI_HOME)
         self._scores = None
         self.load_scores()
-
-        self._sounds = sounds.Sounds()
 
         threading.Thread.__init__(self)
 
@@ -435,4 +434,5 @@ class StateController (threading.Thread):
         finally:
             self._gui_queue.put(Command(Gui.UI_QUIT))
             self._simon_queue.put(Command(Simon.COMMAND_QUIT))
+            self._gears_queue.put(Command(Gears.COMMAND_QUIT))
             self._sounds.cleanup()

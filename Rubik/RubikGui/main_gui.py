@@ -343,12 +343,12 @@ class Gui(queue_common.QueueCommon):
 
     def on_press_2(self, e):
         print("Button2 pressed")
-        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
         self.send_event(event)
 
     def on_press_3(self, e):
         print("Button3 pressed")
-        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON3)
+        event = Events.Event(Events.SOURCE_GUI, Events.EVENT_BUTTON2)
         self.send_event(event)
 
     def on_press_reset(self, e):

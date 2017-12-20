@@ -170,6 +170,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
             else:
                 results.append('F')
         self.hide_pattern()
+        time.sleep(0.05)
         return results
 
     def cube_is_down(self):
@@ -225,9 +226,13 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         if self._state == STATE_TIMING:
             curr_time = self._update_time()
             if self.cube_is_down() and self.is_all_same():
-                self._state = STATE_NOT_RUNNING
-                self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
-                self.set_mode(MODE_IDLE)
+                # Double check the cube is still down and we didn't try to read
+                # the ambient light or something
+                time.sleep(0.2)
+                if self.cube_is_down():
+                    self._state = STATE_NOT_RUNNING
+                    self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
+                    self.set_mode(MODE_IDLE)
             return
 
     # While in the pattern matching game that state machine looks like this:

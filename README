@@ -29,7 +29,10 @@ Running:
 ./run.sh
 
 # To set it up to run on boot
-
+sudo crontab -e
+# Add the following to the end of the file
+@reboot sudo source /home/pi/pywork/RUBIK/run_start.sh >/tmp/rlogs.txt 2>/tmp/rerr.txt
+# Save the file
 
 #### This doesn't work ####
 chmod +x run_start.sh

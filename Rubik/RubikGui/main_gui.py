@@ -14,6 +14,8 @@ Command = queue_common.Command
 
 UI_QUIT = -1
 UI_HOME = 00
+UI_TURN_SCREEN_ON = 01
+UI_TURN_SCREEN_OFF = 02
 UI_CONFIRM_RESET = 99
 
 UI_TIMER_START = 10
@@ -46,6 +48,7 @@ class Gui(queue_common.QueueCommon):
         self.master_ = None
         self.fullscreen_ = True
         self.screen_on_process_ = None
+        self.screen_off_process_ = None
         self.font = tkFont.Font(size=22)
 
         # A 1x1 pixel image for buttons displaying text. This allows their size to
@@ -119,12 +122,27 @@ class Gui(queue_common.QueueCommon):
         # print("Handling Gui command with state " + str(command.command))
         if command.command == UI_QUIT:
             self.exit()
+        elif command.command == UI_TURN_SCREEN_ON:
+            self.turn_screen_on()
+        elif command.command == UI_TURN_SCREEN_OFF:
+            self.turn_screen_off()
         else:
             self.set_ui_state(command.command, data=command.data, data2=command.data2)
 
     def turn_screen_on(self):
         # Force the screen to turn on
+        if self.screen_on_process_ is not None:
+            self.screen_on_process_.kill()
+            time.sleep(0.1)
         self.screen_on_process_ = subprocess.Popen('xset s reset && xset dpms force on',
+                                                   shell=True)
+
+    def turn_screen_off(self):
+        # Force the screen to turn off
+        if self.screen_off_process_ is not None:
+            self.screen_off_process_.kill()
+            time.sleep(0.1)
+        self.screen_off_process_ = subprocess.Popen('xset dpms force off',
                                                    shell=True)
 
     def configure_buttons(self):

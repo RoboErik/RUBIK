@@ -93,6 +93,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     def start_listening_for_events(self):
         if self._is_listening:
             return
+        print("Started listening for button events")
         GPIO.add_event_detect(self.BUTTON_PINS[0], GPIO.FALLING, callback=self.on_press_b1, bouncetime=150)
         GPIO.add_event_detect(self.BUTTON_PINS[1], GPIO.FALLING, callback=self.on_press_b2, bouncetime=150)
         GPIO.add_event_detect(self.BUTTON_PINS[2], GPIO.FALLING, callback=self.on_press_b3, bouncetime=150)
@@ -103,6 +104,8 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
     def stop_listening_for_events(self):
         if not self._is_listening:
             return
+
+        print("Stopped listening for button events")
         GPIO.remove_event_detect(self.BUTTON_PINS[0])
         GPIO.remove_event_detect(self.BUTTON_PINS[1])
         GPIO.remove_event_detect(self.BUTTON_PINS[2])
@@ -166,7 +169,7 @@ class SimonSays(threading.Thread, queue_common.QueueCommon):
                 time.sleep(.02)
             return self._button_queue.pop(0)
         else:
-            return utils.getChar()
+            return utils.get_char()
 
     def show_value(self, value):
         pin = self.BUTTON_LETTER_TO_LED[value]

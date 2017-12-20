@@ -60,10 +60,12 @@ LED_SENSOR_BRIGHTNESS = 15
 TIMER_BLINK_TIME = 0.5
 # Time to show the pattern to solve for in seconds.
 PATTERN_DISPLAY_TIME = 5.0
+# How frequently to check the pattern while the cube is down in case we misread it.
+CHECK_PATTERN_DELAY = 0.25
 # Timeout for cancelling the game if not won yet in seconds.
 RUNNING_TIMEOUT = 30 * 60
 # The max attempts before the game is lost.
-MAX_ATTEMPTS = 2
+MAX_ATTEMPTS = 25
 
 # All the target arrays in one big array
 COLOR_TARGETS = COLOR_TARGETS_15
@@ -89,7 +91,8 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         self._attempts = 0
 
         self._start_time = 0
-        self._pattern_shown_time = 0;
+        self._pattern_shown_time = 0
+        self._last_check_time = 0
         self._timer = switch_timer.SwitchTimer()
         self._stop_event = threading.Event()
         self._color_sensors = None
@@ -115,7 +118,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                     self._source = event.SOURCE_MATCH
 
     def generate_pattern(self):
-        if True:
+        if utils.in_test():
             self._pattern = TEST_PATTERN2
             return
         self._pattern = []
@@ -265,6 +268,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                     self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
                     self.set_mode(MODE_IDLE)
                 else:
+                    self._last_check_time = curr_time
                     self._attempts += 1
                     if self._attempts >= MAX_ATTEMPTS:
                         self._state = STATE_NOT_RUNNING
@@ -274,11 +278,17 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
                         self._state = STATE_WAITING_WRONG_PATTERN
             return
         if self._state == STATE_WAITING_WRONG_PATTERN:
-            self._update_time()
+            curr_time = self._update_time()
             if not self.cube_is_down():
                 self.show_pattern(self._pattern)
                 self._state = STATE_DISPLAYING_PATTERN
                 self._pattern_shown_time = time.time()
+            elif curr_time - self._last_check_time > CHECK_PATTERN_DELAY:
+                if self.is_pattern_correct():
+                    self._state = STATE_NOT_RUNNING
+                    self.send_event(event.Event(self._source, event.EVENT_SUCCESS, curr_time))
+                    self.set_mode(MODE_IDLE)
+                self._last_check_time = curr_time
 
     # Sends the current playtime as an event and returns the playtime.
     def _update_time(self):
@@ -293,6 +303,8 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
 
     def _setup(self):
         print("Setup of RubikSolver")
+        if self._led_strip is not None:
+            return
         self._color_sensors = ColorSensors()
         self._led_strip = LedStrip()
 
@@ -320,7 +332,7 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
         while self._mode != MODE_QUIT:
             if self._mode == MODE_TEST:
                 print("test (p)attern, (g)uessing, or (c)ollect data? (q)uit")
-                value = utils.getChar()
+                value = utils.get_char()
                 if value == 'p':
                     self.test_pattern_display()
                 elif value == 'c':
@@ -346,22 +358,23 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
     def test_pattern_display(self):
         pattern = TEST_PATTERN
         self.show_pattern(pattern)
-        utils.getChar()
+        utils.get_char()
         self.hide_pattern()
         self.generate_pattern()
         self.show_pattern(pattern)
-        utils.getChar()
+        utils.get_char()
         self.hide_pattern()
 
     def test_guessing(self):
         while True:
             print("Check colors? Y/N")
-            value = utils.getChar()
+            value = utils.get_char()
             if value.upper() != 'Y':
                 return
             print("Colors: " + str(self.read_colors()))
 
     def collect_color_data(self, csv):
+        self._setup()
         print("Ready to collect color data. Press r to retry or any other key to continue.")
         value = 'r'
         while value == 'r':
@@ -369,46 +382,50 @@ class RubikSolver(threading.Thread, queue_common.QueueCommon):
             time.sleep(.2)
             self._led_strip.set_brightness(LED_SENSOR_BRIGHTNESS)
             self._led_strip.set_all_leds(LED_SENSOR_COLOR)
-            value = utils.getChar()
+            value = utils.get_char()
 
-        sums = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        samples = 11
-        incr_brightness = False
-        brightness = -5 if incr_brightness else LED_SENSOR_BRIGHTNESS
-        csv.write("Sensor, Red/Green ratio, Red/Blue ratio, Green/Blue ratio, sample\n")
-        for i in range(9 * samples):
-            sensor = i % 9
-            if sensor is 0:
-                print("\nSAMPLE " + str(i / 9) + ":\n")
-                if incr_brightness:
-                    brightness += 10
-                    self._led_strip.set_brightness(brightness)
-            # self.color_sensors.set_sensor(sensor)
-            # colors = self.color_sensors.getColors()
-            colors = self._read_color(sensor)
-            red_green_ratio = colors[RED_INDEX] / float(colors[GREEN_INDEX])
-            red_blue_ratio = colors[RED_INDEX] / float(colors[BLUE_INDEX])
-            green_blue_ratio = colors[GREEN_INDEX] / float(colors[BLUE_INDEX])
-            sums[sensor][0] += red_green_ratio
-            sums[sensor][1] += red_blue_ratio
-            sums[sensor][2] += green_blue_ratio
+        value = 'y'
+        while value == 'y':
+            sums = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            samples = 11
+            incr_brightness = False
+            brightness = -5 if incr_brightness else LED_SENSOR_BRIGHTNESS
+            csv.write("Sensor, Red/Green ratio, Red/Blue ratio, Green/Blue ratio, sample\n")
+            for i in range(9 * samples):
+                sensor = i % 9
+                if sensor is 0:
+                    print("\nSAMPLE " + str(i / 9) + ":\n")
+                    if incr_brightness:
+                        brightness += 10
+                        self._led_strip.set_brightness(brightness)
+                # self.color_sensors.set_sensor(sensor)
+                # colors = self.color_sensors.getColors()
+                colors = self._read_color(sensor)
+                red_green_ratio = colors[RED_INDEX] / float(colors[GREEN_INDEX])
+                red_blue_ratio = colors[RED_INDEX] / float(colors[BLUE_INDEX])
+                green_blue_ratio = colors[GREEN_INDEX] / float(colors[BLUE_INDEX])
+                sums[sensor][0] += red_green_ratio
+                sums[sensor][1] += red_blue_ratio
+                sums[sensor][2] += green_blue_ratio
 
-            guess = get_color_ratio_string(colors)
-            csv.write(str(sensor) + ", " + guess + ", " + str(i) + "\n")
-            print(str(sensor) + ": " + guess + " at Brightness=" + str(brightness))
-            time.sleep(.1)
-        print("\n\nAverages:\n")
-        for i in range(9):
-            print("Sensor " + str(i) + ": r/g=" + str(sums[i][0] / samples)
-                  + ", r/b=" + str(sums[i][1] / samples)
-                  + ", g/b=" + str(sums[i][2] / samples) + "\n")
+                guess = get_color_ratio_string(colors)
+                csv.write(str(sensor) + ", " + guess + ", " + str(i) + "\n")
+                print(str(sensor) + ": " + guess + " at Brightness=" + str(brightness))
+                time.sleep(.1)
+            print("\n\nAverages:\n")
+            for i in range(9):
+                print("Sensor " + str(i) + ": r/g=" + str(sums[i][0] / samples)
+                      + ", r/b=" + str(sums[i][1] / samples)
+                      + ", g/b=" + str(sums[i][2] / samples) + "\n")
 
-        print("\n[")
-        for i in range(9):
-            print("[" + str(round(sums[i][0] / samples, 3))
-                  + ", " + str(round(sums[i][1] / samples, 3))
-                  + ", " + str(round(sums[i][2] / samples, 3)) + "],  # sensor " + str(i))
-        print("]")
+            print("\n[")
+            for i in range(9):
+                print("[" + str(round(sums[i][0] / samples, 3))
+                      + ", " + str(round(sums[i][1] / samples, 3))
+                      + ", " + str(round(sums[i][2] / samples, 3)) + "],  # sensor " + str(i))
+            print("]")
+            print("\n\n Again? y/n")
+            value = utils.get_char()
 
 
 def get_color_ratio_string(colors):

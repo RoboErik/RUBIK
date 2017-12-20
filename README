@@ -29,6 +29,9 @@ Running:
 ./run.sh
 
 # To set it up to run on boot
+
+
+#### This doesn't work ####
 chmod +x run_start.sh
 pico /home/pi/.config/lxsession/LXDE-pi/autostart
 # add "@bash /home/pi/pywork/RUBIK/run_start.sh 2>/tmp/rerr.txt" to autostart
@@ -43,6 +46,10 @@ https://jackbarber.co.uk/blog/2017-02-16-hide-raspberry-pi-mouse-cursor-in-raspb
 
 # To flip screen add the following to /boot/config.txt. See https://www.raspberrypi.org/forums/viewtopic.php?t=120793
 display_rotate=2
+
+# To configure the screen saver
+sudo apt-get install xscreensaver
+# Then use the xscreensaver app
 
 # If audio doesn't work the only thing that seems to help is modprobe.
 # This is now part of sounds.py
@@ -60,3 +67,4 @@ bloop, buzzer, chime from http://www.wavsource.com/
 klaxon from https://freesound.org/people/jbum/sounds/32089/
 musicbox from https://freesound.org/people/davidou/sounds/88452/
 The-Final-Countdown from https://en.wikipedia.org/wiki/File:Europe_-_The_Final_Countdown.ogg
+laser from https://freesound.org/people/plasterbrain/sounds/351807/

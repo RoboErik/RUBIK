@@ -14,8 +14,9 @@ NOTE_5 = 8
 KLAXON = 9
 MUSIC_BOX = 10
 COUNTDOWN = 11
+LASER = 12
 
-SOUNDS_COUNT = 12
+SOUNDS_COUNT = 13
 
 BUTTON_SOUNDS = {
     event.EVENT_BUTTON1: NOTE_1,
@@ -56,6 +57,7 @@ class Sounds:
         self._sounds[KLAXON] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "klaxon.wav"))
         self._sounds[MUSIC_BOX] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "musicbox.wav"))
         self._sounds[COUNTDOWN] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "The-Final-Countdown.ogg"))
+        self._sounds[LASER] = pygame.mixer.Sound(os.path.join("Rubik", "Assets", "sounds", "laser.ogg"))
         self._initialized = True
 
     def play_sound(self, sound, maxtime_ms=0, repeat=0):

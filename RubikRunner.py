@@ -10,7 +10,6 @@ from Rubik import utils
 from Rubik import state_controller
 
 pins_setup = False
-TEST_MODE = True
 
 try:
     # for running on the Pi
@@ -37,13 +36,16 @@ try:
         gearRatio = gear_ratios.GearRatio()
         rubikSolver = rubik_solver.RubikSolver()
 
+        # csv = open("csv_colors.txt", 'w')
+        # rubikSolver.collect_color_data(csv)
+
         stateController = state_controller.StateController(gui, rubikSolver, simonSays, gearRatio)
         start_ui = True
 
-        if TEST_MODE:
+        if utils.in_test():
             print("Type s for SimonSays, g for GearRatio, r for RubikSolver, u for UI. b to Toggle buttons")
             #nextChar = 'G'
-            nextChar = utils.getChar()
+            nextChar = utils.get_char()
 
             if nextChar.upper() == 'S':
                 simonSays.start()
@@ -57,12 +59,7 @@ try:
             elif nextChar.upper() == 'U':
                 stateController.start()
                 active.append(stateController)
-            elif nextChar.upper() == 'B':
-                utils.use_buttons = not utils.use_buttons
-                print("set using buttons to " + str(utils.use_buttons))
-                start_ui = False
         else:
-            utils.use_buttons = True
             stateController.start()
             active.append(stateController)
 
@@ -73,10 +70,10 @@ try:
         for thread in active:
             thread.join()
 
-        if TEST_MODE:
+        if utils.in_test():
             print("Threads have finished. Run again? Y/N")
             # nextChar = 'N'  # utils.getChar()
-            nextChar = utils.getChar()
+            nextChar = utils.get_char()
             if nextChar.upper() != 'Y':
                 running = False
 

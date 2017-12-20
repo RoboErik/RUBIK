@@ -119,6 +119,7 @@ GEAR_SOUNDS = {
 }
 
 RESET_DETECT_WINDOW = 0.5
+SCREEN_OFF_TIMEOUT = 30
 
 def get_state_string(state):
     return STATE_STRINGS.get(state, "UNKNOWN STATE")
@@ -134,8 +135,9 @@ def get_source_string(source):
 
 def s_to_time_string(secs):
     mins = math.floor(secs / 60)
-    seconds = float(round(secs * 100) % 6000) / 100.0
-    return "%02d:%04.2f" % (mins, seconds)
+    seconds = math.floor(secs) % 60
+    tenths = math.floor(100 * (secs - math.floor(secs)))
+    return "%02d:%02d.%02d" % (mins, seconds, tenths)
 
 
 # Sounds note: Could use http://simpleaudio.readthedocs.io/en/latest/installation.html
@@ -148,6 +150,8 @@ class StateController (threading.Thread):
         self._temp_data = None
         self._reset_timer = None
         self._reset_buttons = None
+        self._last_event_time = time.time()
+        self._is_screen_off = False
 
         self._event_queue = Queue()
         self._sounds = sounds.Sounds()
@@ -222,6 +226,11 @@ class StateController (threading.Thread):
                 got_event = False
 
     def handle_event(self, event):
+        self._last_event_time = time.time()
+        if self._is_screen_off:
+            self._gui_queue.put(Command(Gui.UI_TURN_SCREEN_ON))
+            self._is_screen_off = False
+            return
         if event.event != EVENT_UPDATE:
             print("Handling event " + get_event_string(event.event)
                   + " from " + get_source_string(event.source))
@@ -262,7 +271,7 @@ class StateController (threading.Thread):
 
         if event.source == SOURCE_TIMER and event.event == EVENT_SUCCESS:
             self._sounds.play_sound(sounds.CHIME)
-            if self._temp_data < self._scores["time"]:
+            if event.data < self._scores["time"]:
                 self._temp_data = event.data
             else:
                 # Not a better score, skip confirming
@@ -334,7 +343,7 @@ class StateController (threading.Thread):
                 "gears": False
             }
             self.save_scores()
-            self._sounds.play_sound(sounds.COUNTDOWN)
+            self._sounds.play_sound(sounds.LASER)
 
     def transition(self, from_state, to_state):
         if from_state == to_state:
@@ -411,7 +420,7 @@ class StateController (threading.Thread):
     def run(self):
         print("Running state controller!")
         self._sounds.prepare()
-        self._sounds.play_sound(sounds.BLOOP)
+        self._sounds.play_sound(sounds.LASER)
         try:
             while True:
                 if self._state == STATE_EXIT:
@@ -422,7 +431,7 @@ class StateController (threading.Thread):
                         time.sleep(0.05)
                 else:
                     print("Enter (q)uit or 0-9 for events")
-                    key = utils.getChar()
+                    key = utils.get_char()
                     if key.upper() == 'Q':
                         self._state = STATE_EXIT
                     else:
@@ -431,6 +440,9 @@ class StateController (threading.Thread):
                         self._sounds.play_sound(sounds.BLOOP)
 
                 self.check_queue()
+                if not self._is_screen_off and time.time() - self._last_event_time > SCREEN_OFF_TIMEOUT:
+                    self._gui_queue.put(Command(Gui.UI_TURN_SCREEN_OFF))
+                    self._is_screen_off = True
         finally:
             self._gui_queue.put(Command(Gui.UI_QUIT))
             self._simon_queue.put(Command(Simon.COMMAND_QUIT))
